@@ -1,11 +1,22 @@
 # Booleans
 
-#t
-#f
+true
+false
 
 ==>
 
 Program(Boolean, Boolean)
+
+# Numbers
+
+1
+2.5
+3e-5
+1_500
+
+==>
+
+Program(Number, Number, Number, Number)
 
 # Identifiers
 
@@ -16,26 +27,46 @@ Two_Three
 
 Program(Identifier, Identifier)
 
+# Null-safe property/method access
+
+one?.two
+
+==>
+
+Program(Identifier, NullSafe, Identifier)
+
+# Null-coalescing operator
+
+one ?? "two"
+
+==>
+
+Program(Identifier, NullCoalescing, String)
+
 # Strings
 
 "hello"
 "one\"\\two"
+'t"h"ree'
 
 ==>
 
-Program(String, String)
+Program(String, String, String)
 
-# Applications
+# Operators
 
-(begin
-  (when #t
-    (print (concat "hello" " " "world")))
-  (print "DONE"))
+1 + 2
+true || false
 
 ==>
 
-Program(Application(
-  Identifier,
-  Application(Identifier, Boolean, Application(
-    Identifier, Application(Identifier, String, String, String)))
-  Application(Identifier, String)))
+Program(Number, Operator, Number, Boolean, Operator, Boolean)
+
+# Arrays
+
+["a","b","c"]
+[[2, []]]
+
+==>
+
+Program(Array(String, String, String), Array(Array(Number, Array)))

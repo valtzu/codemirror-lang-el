@@ -15,10 +15,15 @@ export const ELLanguage = LRLanguage.define({
         Identifier: t.variableName,
         Boolean: t.bool,
         String: t.string,
-        Integer: t.integer,
-        "( )": t.paren,
-        AndOperator: t.operator,
-        OrOperator: t.operator,
+        Number: t.integer,
+        OpeningBracket: t.paren,
+        ClosingBracket: t.paren,
+        '[': t.squareBracket,
+        ']': t.squareBracket,
+        Operator: t.operator,
+        NullSafe: t.operator,
+        NullCoalescing: t.operator,
+        Punctuation: t.punctuation,
       })
     ]
   }),
@@ -26,6 +31,6 @@ export const ELLanguage = LRLanguage.define({
   }
 })
 
-export function EXAMPLE() {
+export function expressionlanguage() {
   return new LanguageSupport(ELLanguage)
 }

@@ -3,34 +3,41 @@
 @skip { space }
 
 expression {
+  Number |
   Identifier |
   String |
-  Integer |
   Boolean |
-  AndOperator |
-  OrOperator |
-  Application { "(" expression* ")" }
+  Operator |
+  Punctuation |
+  NullSafe |
+  NullCoalescing |
+  Array { "[" (expression ("," expression)*)? "]" } |
+  Application { OpeningBracket expression* ClosingBracket }
 }
 
 @tokens {
-  Identifier { $[a-zA-Z_\-0-9]+ }
+  Number { (('.' $[0-9]+('_' $[0-9]+)* | $[0-9]+('_' $[0-9]+)*('.' (![.])($[0-9]+('_' $[0-9]+)*)?)?)($[eE]$[+-]?$[0-9]+('_' $[0-9]+)*)?) }
 
-  String { '"' (!["\\] | "\\" _)* '"' }
+  Identifier { $[a-zA-Z_]+$[a-zA-Z_0-9]* }
 
-  Integer { $[0-9]+ }
+  String { ( '"' (!["\\] | "\\" _)* '"' ) | "'" (!['\\] | "\\" _)* "'" }
 
   Boolean { "true" | "false" }
 
   space { $[ \t\n\r]+ }
 
-  AndOperator { "&&" }
+  Operator { 'starts with' | 'ends with' | 'contains' | 'matches' | 'not in' | 'not' | 'and' | '===' | '!==' | 'or' | '||' | '&&' | '==' | '!=' | '>=' | '<=' | 'in' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' }
 
-  OrOperator { "||" }
+  OpeningBracket { $[\(\{] }
+  ClosingBracket { $[\)\}] }
+  NullSafe { '?.' }
+  NullCoalescing { '??' }
+  Punctuation { $[.?:] }
 
-  "(" ")"
-
+  @precedence { Number, Punctuation }
+  @precedence { Operator, Identifier }
   @precedence { Boolean, Identifier }
-  @precedence { Integer, Identifier }
+  @precedence { Number, Identifier }
 }
 
 @detectDelim
