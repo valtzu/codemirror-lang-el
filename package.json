@@ -1,5 +1,5 @@
 {
-  "name": "codemirror-lang-el",
+  "name": "@valtzu/codemirror-lang-el",
   "version": "0.1.0",
   "description": "Symfony Expression Language language support for CodeMirror",
   "scripts": {
@@ -28,5 +28,12 @@
     "rollup-plugin-ts": "^3.0.2",
     "typescript": "^4.3.4"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/valtzu/codemirror-lang-el"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/valtzu"
+  }
 }
