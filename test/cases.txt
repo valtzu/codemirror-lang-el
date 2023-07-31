@@ -57,10 +57,11 @@ Program(String, String, String)
 
 1 + 2
 true || false
+"ab" starts with "a"
 
 ==>
 
-Program(Number, Operator, Number, Boolean, Operator, Boolean)
+Program(Number, Operator, Number, Boolean, Operator, Boolean, String, OperatorKeyword, String)
 
 # Arrays
 

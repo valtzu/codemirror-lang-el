@@ -8,6 +8,7 @@ expression {
   String |
   Boolean |
   Operator |
+  OperatorKeyword |
   Punctuation |
   NullSafe |
   NullCoalescing |
@@ -26,7 +27,8 @@ expression {
 
   space { $[ \t\n\r]+ }
 
-  Operator { 'starts with' | 'ends with' | 'contains' | 'matches' | 'not in' | 'not' | 'and' | '===' | '!==' | 'or' | '||' | '&&' | '==' | '!=' | '>=' | '<=' | 'in' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' }
+  OperatorKeyword { 'starts with' | 'ends with' | 'contains' | 'matches' | 'not in' | 'not' | 'and' | 'or' | 'in' }
+  Operator { '===' | '!==' |  '||' | '&&' | '==' | '!=' | '>=' | '<=' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' }
 
   OpeningBracket { $[\(\{] }
   ClosingBracket { $[\)\}] }
@@ -35,7 +37,7 @@ expression {
   Punctuation { $[.?:] }
 
   @precedence { Number, Punctuation }
-  @precedence { Operator, Identifier }
+  @precedence { OperatorKeyword, Identifier }
   @precedence { Boolean, Identifier }
   @precedence { Number, Identifier }
 }
