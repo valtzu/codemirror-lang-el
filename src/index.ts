@@ -63,7 +63,7 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
     from,
     to,
     options: [
-      ...(identifiers.map(identifier => ({ label: identifier, type: "property" })) ?? []),
+      ...(identifiers.map(identifier => ({ label: identifier, type: "variable" })) ?? []),
       ...(functions.map(([fn, args]) => ({ label: `${fn}(${args.join(',')})`, apply: `${fn}(${args.length == 0 ? ')' : ''}`, type: "function" })) ?? []),
     ],
     validFor: identifier,
