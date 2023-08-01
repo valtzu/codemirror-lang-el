@@ -71,3 +71,12 @@ Program(Number, Operator, Number, Boolean, Operator, Boolean, String, OperatorKe
 ==>
 
 Program(Array(String, String, String), Array(Array(Number, Array)))
+
+# Objects
+
+{a: b, "c": 5}
+{"c": "d"}
+
+==>
+
+Program(Object(ObjectKey, Identifier, ObjectKey, Number), Object(ObjectKey, String))

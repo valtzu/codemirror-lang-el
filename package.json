@@ -2,7 +2,7 @@
   "name": "@valtzu/codemirror-lang-el",
   "description": "Symfony Expression Language language support for CodeMirror",
   "scripts": {
-    "test": "mocha test/test.js",
+    "test": "mocha test/test.js test/test-complete.js",
     "prepare": "rollup -c"
   },
   "type": "module",
@@ -15,12 +15,15 @@
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "dependencies": {
+    "@codemirror/autocomplete": "^6.9.0",
     "@codemirror/language": "^6.0.0",
     "@lezer/highlight": "^1.0.0",
     "@lezer/lr": "^1.0.0"
   },
   "devDependencies": {
     "@lezer/generator": "^1.0.0",
+    "@types/mocha": "^10.0.1",
+    "ist": "^1.1.7",
     "mocha": "^9.0.1",
     "rollup": "^2.60.2",
     "rollup-plugin-dts": "^4.0.1",
