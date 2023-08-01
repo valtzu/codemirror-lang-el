@@ -70,4 +70,10 @@ describe("Expression language completion", () => {
     ist(c.length, 1);
     ist("ends with", c[0].label);
   });
+
+  it("completes operator keywords after string", () => {
+    let c = get("'foobar' s‸").options;
+    ist(c.length, 1);
+    ist("starts with", c[0].label);
+  });
 });
