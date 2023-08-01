@@ -93,7 +93,7 @@ function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, conte
 }
 
 function expressionLanguageCompletionSourceWith(config: ExpressionLanguageConfig) {
-  config.operatorKeywords ??= ['starts with', 'ends with', 'contains', 'matches', 'in', 'not', 'or', 'and'];
+  config.operatorKeywords ??= ['starts with', 'ends with', 'contains', 'matches', 'not in', 'in', 'not', 'or', 'and'];
 
   return (context: CompletionContext) => expressionLanguageCompletionFor(config, context);
 }
