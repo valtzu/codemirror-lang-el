@@ -12,8 +12,8 @@ function get(doc, conf = {}) {
     doc,
     selection: { anchor: cur },
     extensions: [expressionlanguage({
-      identifiers: ["foobar", "foobaz"],
-      functions: {smh: [], smash_my_head: ["object"]},
+      identifiers: [{name: "foobar"}, {name: "foobaz"}],
+      functions: [{name: "smh"}, {name: "smash_my_head", args: ["object"]}],
     })],
   });
   return state.languageDataAt("autocomplete", cur)[0](new CompletionContext(state, cur, !!conf.explicit));
@@ -48,14 +48,16 @@ describe("Expression language completion", () => {
   it("completes parameterless functions", () => {
     let c = get("sm‸").options;
     ist(c.length, 0, '>');
-    ist("smh()", c[0].label);
+    ist("smh", c[0].label);
+    ist("()", c[0].detail);
     ist("smh()", c[0].apply);
   });
 
   it("completes functions with params", () => {
     let c = get("smash‸").options;
     ist(c.length, 1);
-    ist("smash_my_head(object)", c[0].label);
+    ist("smash_my_head", c[0].label);
+    ist("(object)", c[0].detail);
     ist("smash_my_head(", c[0].apply);
   });
 

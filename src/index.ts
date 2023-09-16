@@ -6,8 +6,8 @@ import { SyntaxNode } from "@lezer/common"
 import { EditorState } from "@codemirror/state"
 
 export interface ExpressionLanguageConfig {
-  identifiers?: readonly string[];
-  functions?: Record<string, readonly string[]>;
+  identifiers?: readonly { name: string; detail?: string; info?: string }[];
+  functions?: readonly { name: string; args: string[]; info?: string }[];
   operatorKeywords?: readonly string[];
 }
 
@@ -56,15 +56,15 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
 
 function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): CompletionResult {
   const text = state.sliceDoc(from, to);
-  const identifiers = config.identifiers?.filter(i => i.startsWith(text)) ?? [];
-  const functions = Object.entries(config.functions ?? {}).filter(([fn]) => fn.startsWith(text));
+  const identifiers = config.identifiers?.filter(({ name }) => name.startsWith(text)) ?? [];
+  const functions = config.functions?.filter(({ name }) => name.startsWith(text)) ?? [];
 
   return {
     from,
     to,
     options: [
-      ...(identifiers.map(identifier => ({ label: identifier, type: "variable" })) ?? []),
-      ...(functions.map(([fn, args]) => ({ label: `${fn}(${args.join(',')})`, apply: `${fn}(${args.length == 0 ? ')' : ''}`, type: "function" })) ?? []),
+      ...(identifiers.map(({ name, info, detail }) => ({ label: name, info, detail, type: 'variable' })) ?? []),
+      ...(functions.map(({ name, args = [], info}) => ({ label: name, detail: `(${args.join(',')})`, apply: `${name}(${args.length == 0 ? ')' : ''}`, info, type: "function" })) ?? []),
     ],
     validFor: identifier,
   };
@@ -73,13 +73,6 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
 function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, context: CompletionContext): CompletionResult | null {
   let {state, pos} = context;
   let tree = syntaxTree(state).resolveInner(pos, -1);
-  // let around = tree.resolve(pos);
-  // for (let scan = pos, before; around == tree && (before = tree.childBefore(scan));) {
-  //   let last = before.lastChild;
-  //   if (!last || !last.type.isError || last.from < last.to) break;
-  //   around = tree = before;
-  //   scan = last.from;
-  // }
 
   if (tree.name == 'String') {
     return null;
