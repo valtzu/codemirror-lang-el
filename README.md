@@ -27,7 +27,7 @@ let editor = new EditorView({
     extensions: [
         basicSetup,
         keymap.of([{key: "Tab", run: acceptCompletion}]),
-        expressionlanguage({ identifiers: ['foo', 'bar'], functions: {'smh': [], smash_my_head: ['object']} })
+        expressionlanguage({ identifiers: [{name: 'foo'}, {name: 'bar'}], functions: [{name: 'smh'}, {name: 'smash_my_head', args: ['object']}] })
     ],   
     parent: document.getElementById('editor'),
 });
