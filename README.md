@@ -13,7 +13,7 @@
     "codemirror": "https://esm.sh/codemirror@6.0.1",
     "@codemirror/autocomplete": "https://esm.sh/@codemirror/autocomplete@6.9.0",
     "@codemirror/view": "https://esm.sh/@codemirror/view@6.17.1",
-    "@valtzu/codemirror-lang-el": "https://esm.sh/@valtzu/codemirror-lang-el@0.1.13"
+    "@valtzu/codemirror-lang-el": "https://esm.sh/@valtzu/codemirror-lang-el@0.2.1"
   }
 }  
 </script>
@@ -27,7 +27,16 @@ let editor = new EditorView({
     extensions: [
         basicSetup,
         keymap.of([{key: "Tab", run: acceptCompletion}]),
-        expressionlanguage({ identifiers: [{name: 'foo'}, {name: 'bar'}], functions: [{name: 'smh'}, {name: 'smash_my_head', args: ['object']}] })
+        expressionlanguage({
+          identifiers: [
+            { name: 'foo' },
+            { name: 'bar' }
+          ],
+          functions: [
+            {name: 'smh'},
+            {name: 'smash_my_head', args: ['object']},
+          ],
+        })
     ],   
     parent: document.getElementById('editor'),
 });
