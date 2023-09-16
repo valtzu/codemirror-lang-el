@@ -20,13 +20,13 @@ const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(vi
     if (node.name == "Identifier") {
       const identifier = view.state.sliceDoc(node.from,  node.to);
       const isFunction = config.functions?.find(fn => fn.name === identifier);
-      const isVariable = config.identifiers?.filter(variable => variable.name === identifier);
+      const isVariable = config.identifiers?.find(variable => variable.name === identifier);
 
       if (!isFunction && !isVariable) {
         diagnostics.push({
           from: node.from,
           to: node.to,
-          severity: 'warning',
+          severity: 'error',
           message: `Identifier "${identifier}" not found`,
         });
       }
