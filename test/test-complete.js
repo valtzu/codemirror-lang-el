@@ -82,4 +82,9 @@ describe("Expression language completion", () => {
   it("does not complete anything when there's open string", () => {
     ist(null, get("'foobar s‸"));
   });
+
+  it("does not complete operators when there's no previous value", () => {
+    let c = get("smash_my_head(a‸").options;
+    ist(c.length, 0);
+  });
 });

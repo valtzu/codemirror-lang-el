@@ -78,7 +78,7 @@ function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, conte
     return null;
   }
 
-  if (tree.prevSibling && !['Operator', 'OperatorKeyword', 'Punctuation', 'NullSafe', 'NullCoalescing'].includes(tree.prevSibling.name)) {
+  if (tree.prevSibling && !['Operator', 'OperatorKeyword', 'Punctuation', 'NullSafe', 'NullCoalescing', 'OpeningBracket'].includes(tree.prevSibling.name)) {
     return completeOperatorKeyword(state, config, tree, tree.from, pos);
   }
 
