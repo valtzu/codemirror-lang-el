@@ -2,8 +2,9 @@ import { parser } from "./syntax.grammar";
 import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, foldInside, delimitedIndent, syntaxTree } from "@codemirror/language";
 import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { styleTags, tags as t } from "@lezer/highlight";
-import { SyntaxNode } from "@lezer/common"
-import { EditorState } from "@codemirror/state"
+import { SyntaxNode } from "@lezer/common";
+import { EditorState } from "@codemirror/state";
+import { linter, Diagnostic } from "@codemirror/lint";
 
 export interface ExpressionLanguageConfig {
   identifiers?: readonly { name: string; detail?: string; info?: string }[];
@@ -12,6 +13,28 @@ export interface ExpressionLanguageConfig {
 }
 
 const identifier = /^[a-zA-Z_]+[a-zA-Z_0-9]*$/;
+
+const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => {
+  let diagnostics: Diagnostic[] = [];
+  syntaxTree(view.state).cursor().iterate(node => {
+    if (node.name == "Identifier") {
+      const identifier = view.state.sliceDoc(node.from,  node.to);
+      const isFunction = config.functions?.find(fn => fn.name === identifier);
+      const isVariable = config.identifiers?.filter(variable => variable.name === identifier);
+
+      if (!isFunction && !isVariable) {
+        diagnostics.push({
+          from: node.from,
+          to: node.to,
+          severity: 'warning',
+          message: `Identifier "${identifier}" not found`,
+        });
+      }
+    }
+  });
+
+  return diagnostics;
+});
 
 export const ELLanguage = LRLanguage.define({
   parser: parser.configure({
@@ -96,5 +119,9 @@ function expressionLanguageCompletionSourceWith(config: ExpressionLanguageConfig
 }
 
 export function expressionlanguage(config: ExpressionLanguageConfig = {}, extensions: Array<any> = []) {
-  return new LanguageSupport(ELLanguage, [ELLanguage.data.of({ autocomplete: expressionLanguageCompletionSourceWith(config) }), ...extensions]);
+  return new LanguageSupport(ELLanguage, [
+    ELLanguage.data.of({ autocomplete: expressionLanguageCompletionSourceWith(config) }),
+    expressionLanguageLinter(config),
+    ...extensions,
+  ]);
 }
