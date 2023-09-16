@@ -81,6 +81,10 @@ function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, conte
   //   scan = last.from;
   // }
 
+  if (tree.name == 'String') {
+    return null;
+  }
+
   if (tree.prevSibling && !['Operator', 'OperatorKeyword', 'Punctuation', 'NullSafe', 'NullCoalescing'].includes(tree.prevSibling.name)) {
     return completeOperatorKeyword(state, config, tree, tree.from, pos);
   }

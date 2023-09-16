@@ -76,4 +76,8 @@ describe("Expression language completion", () => {
     ist(c.length, 1);
     ist("starts with", c[0].label);
   });
+
+  it("does not complete anything when there's open string", () => {
+    ist(null, get("'foobar s‸"));
+  });
 });
