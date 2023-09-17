@@ -65,12 +65,14 @@ describe("Expression language completion", () => {
     let c = get("smh s‸").options;
     ist(c.length, 1);
     ist("starts with", c[0].label);
+    ist("starts with ", c[0].apply);
   });
 
   it("completes operator keywords after parenthesis", () => {
     let c = get("smh() en‸").options;
     ist(c.length, 1);
     ist("ends with", c[0].label);
+    ist("ends with ", c[0].apply);
   });
 
   it("completes operator keywords after string", () => {

@@ -100,7 +100,7 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
   return {
     from,
     to,
-    options: config.operatorKeywords?.filter(value => value.startsWith(text)).map(keyword => ({ label: keyword, type: "property" })) ?? [],
+    options: config.operatorKeywords?.filter(value => value.startsWith(text)).map(keyword => ({ label: keyword, apply: `${keyword} `, type: "keyword" })) ?? [],
     validFor: (text: string) => config.operatorKeywords?.some(value => value.startsWith(text)) ?? false,
   };
 }
