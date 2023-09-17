@@ -35,7 +35,7 @@ expression {
   ClosingBracket { ")" }
   NullSafe { '?.' }
   NullCoalescing { '??' }
-  Punctuation { $[.?:] }
+  Punctuation { $[.?:,] }
 
   @precedence { Number, Punctuation }
   @precedence { OperatorKeyword, Identifier }

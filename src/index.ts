@@ -109,12 +109,14 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
   const text = state.sliceDoc(from, to);
   const identifiers = config.identifiers?.filter(({ name }) => name.startsWith(text)) ?? [];
   const functions = config.functions?.filter(({ name }) => name.startsWith(text)) ?? [];
+  const prevName = tree.prevSibling?.name;
+  const apply = (name: string) => !prevName || !['OpeningBracket', 'Operator', 'OperatorKeyword', 'Punctuation'].includes(prevName) ? `${name} ` : name;
 
   return {
     from,
     to,
     options: [
-      ...(identifiers.map(({ name, info, detail }) => ({ label: name, info, detail, type: 'variable' })) ?? []),
+      ...(identifiers.map(({ name, info, detail }) => ({ label: name, apply: apply(name), info, detail, type: 'variable' })) ?? []),
       ...(functions.map(({ name, args = [], info}) => ({ label: name, detail: `(${args.join(',')})`, apply: `${name}(${args.length == 0 ? ')' : ''}`, info, type: "function" })) ?? []),
     ],
     validFor: identifier,
