@@ -10,7 +10,7 @@ import { hoverTooltip } from "@codemirror/view";
 export interface ExpressionLanguageConfig {
   identifiers?: readonly { name: string; detail?: string; info?: string }[];
   functions?: readonly { name: string; args: string[]; info?: string }[];
-  operatorKeywords?: readonly string[];
+  operatorKeywords?: readonly { name: string; detail?: string, info?: string }[];
 }
 
 const identifier = /^[a-zA-Z_]+[a-zA-Z_0-9]*$/;
@@ -100,8 +100,8 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
   return {
     from,
     to,
-    options: config.operatorKeywords?.filter(value => value.startsWith(text)).map(keyword => ({ label: keyword, apply: `${keyword} `, type: "keyword" })) ?? [],
-    validFor: (text: string) => config.operatorKeywords?.some(value => value.startsWith(text)) ?? false,
+    options: config.operatorKeywords?.filter(({ name }) => name.startsWith(text)).map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
+    validFor: (text: string) => config.operatorKeywords?.some(({ name }) => name.startsWith(text)) ?? false,
   };
 }
 
@@ -141,7 +141,17 @@ function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, conte
 }
 
 function expressionLanguageCompletionSourceWith(config: ExpressionLanguageConfig) {
-  config.operatorKeywords ??= ['starts with', 'ends with', 'contains', 'matches', 'not in', 'in', 'not', 'or', 'and'];
+  config.operatorKeywords ??= [
+    { name: 'starts with' },
+    { name: 'ends with' },
+    { name: 'contains' },
+    { name: 'matches' },
+    { name: 'not in' },
+    { name: 'in' },
+    { name: 'not' },
+    { name: 'or' },
+    { name: 'and' },
+  ];
 
   return (context: CompletionContext) => expressionLanguageCompletionFor(config, context);
 }
