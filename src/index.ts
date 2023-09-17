@@ -5,6 +5,7 @@ import { styleTags, tags as t } from "@lezer/highlight";
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { linter, Diagnostic } from "@codemirror/lint";
+import { hoverTooltip } from "@codemirror/view";
 
 export interface ExpressionLanguageConfig {
   identifiers?: readonly { name: string; detail?: string; info?: string }[];
@@ -13,16 +14,16 @@ export interface ExpressionLanguageConfig {
 }
 
 const identifier = /^[a-zA-Z_]+[a-zA-Z_0-9]*$/;
+const isFunction = (identifier: string, config: ExpressionLanguageConfig) => config.functions?.find(fn => fn.name === identifier);
+const isVariable = (identifier: string, config: ExpressionLanguageConfig) => config.identifiers?.find(variable => variable.name === identifier);
 
 const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => {
   let diagnostics: Diagnostic[] = [];
   syntaxTree(view.state).cursor().iterate(node => {
     if (node.name == "Identifier") {
       const identifier = view.state.sliceDoc(node.from,  node.to);
-      const isFunction = config.functions?.find(fn => fn.name === identifier);
-      const isVariable = config.identifiers?.find(variable => variable.name === identifier);
 
-      if (!isFunction && !isVariable) {
+      if (!isFunction(identifier, config) && !isVariable(identifier, config)) {
         diagnostics.push({
           from: node.from,
           to: node.to,
@@ -34,6 +35,33 @@ const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(vi
   });
 
   return diagnostics;
+});
+
+export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip((view, pos, side) => {
+  let { from, to, text } = view.state.doc.lineAt(pos);
+  let start = pos, end = pos;
+  while (start > from && /\w/.test(text[start - from - 1])) start--;
+  while (end < to && /\w/.test(text[end - from])) end++;
+  if (start == pos && side < 0 || end == pos && side > 0) {
+    return null;
+  }
+  const keyword = text.slice(start - from, end - from);
+  const info = (isFunction(keyword, config) ?? isVariable(keyword, config))?.info;
+  if (!info) {
+    return null;
+  }
+
+  return {
+    pos: start,
+    end,
+    above: true,
+    create(view) {
+      let dom = document.createElement("div")
+      dom.textContent = info;
+      dom.className = 'cm-diagnostic';
+      return { dom };
+    },
+  };
 });
 
 export const ELLanguage = LRLanguage.define({
@@ -122,6 +150,7 @@ export function expressionlanguage(config: ExpressionLanguageConfig = {}, extens
   return new LanguageSupport(ELLanguage, [
     ELLanguage.data.of({ autocomplete: expressionLanguageCompletionSourceWith(config) }),
     expressionLanguageLinter(config),
+    keywordTooltip(config),
     ...extensions,
   ]);
 }
