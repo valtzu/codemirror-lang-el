@@ -94,21 +94,21 @@ export const ELLanguage = LRLanguage.define({
   }
 })
 
-function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): CompletionResult {
+function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult {
   const text = state.sliceDoc(from, to);
 
   return {
     from,
     to,
-    options: config.operatorKeywords?.filter(({ name }) => name.startsWith(text)).map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
-    validFor: (text: string) => config.operatorKeywords?.some(({ name }) => name.startsWith(text)) ?? false,
+    options: config.operatorKeywords?.filter(({ name }) => explicit || name.startsWith(text)).map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
+    validFor: (text: string) => config.operatorKeywords?.some(({ name }) => explicit || name.startsWith(text)) ?? false,
   };
 }
 
-function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): CompletionResult {
+function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult {
   const text = state.sliceDoc(from, to);
-  const identifiers = config.identifiers?.filter(({ name }) => name.startsWith(text)) ?? [];
-  const functions = config.functions?.filter(({ name }) => name.startsWith(text)) ?? [];
+  const identifiers = config.identifiers?.filter(({ name }) => explicit || name.startsWith(text)) ?? [];
+  const functions = config.functions?.filter(({ name }) => explicit || name.startsWith(text)) ?? [];
   const prevName = tree.prevSibling?.name;
   const apply = (name: string) => !prevName || !['OpeningBracket', 'Operator', 'OperatorKeyword', 'Punctuation'].includes(prevName) ? `${name} ` : name;
 
@@ -124,19 +124,21 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
 }
 
 function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, context: CompletionContext): CompletionResult | null {
-  let {state, pos} = context;
+  let { state, pos, explicit } = context;
   let tree = syntaxTree(state).resolveInner(pos, -1);
+  const isOperator = (node: SyntaxNode) => ['Operator', 'OperatorKeyword', 'Punctuation', 'NullSafe', 'NullCoalescing', 'OpeningBracket'].includes(node.name)
+  const isIdentifier = (node: SyntaxNode) => node.name === 'Identifier';
 
   if (tree.name == 'String') {
     return null;
   }
 
-  if (tree.prevSibling && !['Operator', 'OperatorKeyword', 'Punctuation', 'NullSafe', 'NullCoalescing', 'OpeningBracket'].includes(tree.prevSibling.name)) {
-    return completeOperatorKeyword(state, config, tree, tree.from, pos);
+  if (tree.prevSibling && !isOperator(tree.prevSibling) && (!explicit || !isOperator(tree.node))) {
+    return completeOperatorKeyword(state, config, tree, tree.from, pos, explicit);
   }
 
-  if (tree.name == "Identifier") {
-    return completeIdentifier(state, config, tree, tree.from, pos)
+  if ((!tree.prevSibling || !isIdentifier(tree.prevSibling) || isOperator(tree.node)) && (explicit || isIdentifier(tree.node))) {
+    return completeIdentifier(state, config, tree, isIdentifier(tree.node) ? tree.from : pos, pos, explicit);
   }
 
   return null;
