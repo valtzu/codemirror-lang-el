@@ -1,31 +1,26 @@
 # Booleans
 
-true
-false
+[true, false]
 
 ==>
 
-Program(Boolean, Boolean)
+Expression(Array(Boolean, Boolean))
 
 # Numbers
 
-1
-2.5
-3e-5
-1_500
+[1, 2.5, 3e-5, 1_500]
 
 ==>
 
-Program(Number, Number, Number, Number)
+Expression(Array(Number, Number, Number, Number))
 
 # Identifiers
 
-one
-Two_Three
+[one, Two_Three]
 
 ==>
 
-Program(Identifier, Identifier)
+Expression(Array(Identifier, Identifier))
 
 # Null-safe property/method access
 
@@ -33,7 +28,7 @@ one?.two
 
 ==>
 
-Program(Identifier, NullSafe, Identifier)
+Expression(ObjectAccess(Identifier, NullSafeMemberOf, Identifier))
 
 # Null-coalescing operator
 
@@ -41,42 +36,44 @@ one ?? "two"
 
 ==>
 
-Program(Identifier, NullCoalescing, String)
+Expression(BinaryExpression(Identifier, Operator, String))
+
+# Ternary expression
+
+condition ? "yes" : "no"
+
+==>
+
+Expression(TernaryExpression(Identifier, String, String))
 
 # Strings
 
-"hello"
-"one\"\\two"
-'t"h"ree'
+["hello", "one\"\\two", 't"h"ree']
 
 ==>
 
-Program(String, String, String)
+Expression(Array(String, String, String))
 
-# Operators
+# Binary operators
 
-1 + 2
-true || false
-"ab" starts with "a"
+[1 + 2, true || false, "ab" starts with "a"]
 
 ==>
 
-Program(Number, Operator, Number, Boolean, Operator, Boolean, String, OperatorKeyword, String)
+Expression(Array(BinaryExpression(Number, Operator, Number), BinaryExpression(Boolean, Operator, Boolean), BinaryExpression(String, OperatorKeyword, String)))
 
 # Arrays
 
-["a","b","c"]
-[[2, []]]
+[["a","b","c"], [[2, []]]]
 
 ==>
 
-Program(Array(String, String, String), Array(Array(Number, Array)))
+Expression(Array(Array(String, String, String), Array(Array(Number, Array))))
 
 # Objects
 
-{a: b, "c": 5}
-{"c": "d"}
+[{a: b, "c": 5},{"c": "d"}]
 
 ==>
 
-Program(Object(ObjectKey, Identifier, ObjectKey, Number), Object(ObjectKey, String))
+Expression(Array(Object(Identifier, Identifier, String, Number), Object(String, String)))

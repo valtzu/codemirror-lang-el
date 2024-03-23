@@ -32,11 +32,11 @@ describe("Expression language completion", () => {
     ist(!c.some(o => operatorKeywords.includes(o.label)));
   });
 
-  // it("completes operators when explicitly requested", () => {
-  //   let c = get("foo > 10 ‸", {explicit: true}).options;
-  //   ist(c.length, 0, '>');
-  //   ist(c.some(o => operatorKeywords.includes(o.label)));
-  // });
+  it("completes operators when explicitly requested", () => {
+    let c = get("foo > 10 ‸", {explicit: true}).options;
+    ist(c.length, 0, '>');
+    ist(c.some(o => operatorKeywords.includes(o.label)));
+  });
 
   it("completes variables when explicitly requested, even mid-word", () => {
     let c = get("foo > 10 and foo‸", {explicit: true}).options;

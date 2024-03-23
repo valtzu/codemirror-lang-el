@@ -1,47 +1,86 @@
-@top Program { expression* }
+@precedence {
+  left @left,
+  right @right
+}
+
+@top Expression { expression }
 
 @skip { space }
 
 expression {
+  ObjectAccess |
+  ArrayAccess |
+  FunctionCall |
   Number |
-  Identifier |
   String |
   Boolean |
   Null |
-  Operator |
-  OperatorKeyword |
-  Punctuation |
-  NullSafe |
-  NullCoalescing |
-  Object { "{" (ObjectKey ":" expression ("," ObjectKey ":" expression)?) "}" } |
-  Array { "[" (expression ("," expression)*)? "]" } |
-  Application { OpeningBracket expression* ClosingBracket }
+  Object |
+  Array |
+  Identifier |
+  TernaryExpression |
+  BinaryExpression |
+  UnaryExpression |
+  "(" expression ")"
+}
+
+Object {
+  "{" (expression ":" expression ("," expression ":" expression)*)? "}"
+}
+
+ObjectAccess {
+  Identifier (NullSafeMemberOf | MemberOf) (Identifier | FunctionCall)
+}
+
+ArrayAccess {
+  expression "[" expression "]"
+}
+
+FunctionCall {
+  Identifier "(" (expression ("," expression)*)? ")"
+}
+
+Array {
+  "[" (expression ("," expression)*)? "]"
+}
+
+UnaryExpression {
+  UnaryOperator !right expression
+}
+
+BinaryExpression {
+  expression !left (OperatorKeyword | Operator) expression
+}
+
+TernaryExpression {
+  expression !left '?' expression ':' expression
 }
 
 @tokens {
-  Number { (('.' $[0-9]+('_' $[0-9]+)* | $[0-9]+('_' $[0-9]+)*('.' (![.])($[0-9]+('_' $[0-9]+)*)?)?)($[eE]$[+-]?$[0-9]+('_' $[0-9]+)*)?) }
+  Number { (($[0-9]+('_' $[0-9]+)*('.' (![.])($[0-9]+('_' $[0-9]+)*)?)?)($[eE]$[+-]?$[0-9]+('_' $[0-9]+)*)?) }
   Identifier { $[a-zA-Z_]+$[a-zA-Z_0-9]* }
   String { ( '"' (!["\\] | "\\" _)* ('"' | @eof) ) | "'" (!['\\] | "\\" _)* ("'" | @eof) }
-  ObjectKey { $[a-zA-Z_]+$[a-zA-Z_0-9]* | String }
   Null { "null" }
   Boolean { "true" | "false" }
 
   space { $[ \t\n\r]+ }
 
   OperatorKeyword { 'starts with' | 'ends with' | 'contains' | 'matches' | 'not in' | 'not' | 'and' | 'or' | 'in' }
-  Operator { '===' | '!==' |  '||' | '&&' | '==' | '!=' | '>=' | '<=' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' }
+  Operator { '===' | '!==' |  '||' | '&&' | '==' | '!=' | '>=' | '<=' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' | '??' | '?:' }
+  UnaryOperator { '!' | 'not' | '+' | '-' }
+  MemberOf { '.' }
+  NullSafeMemberOf { '?.' }
 
-  OpeningBracket { "(" }
-  ClosingBracket { ")" }
-  NullSafe { '?.' }
-  NullCoalescing { '??' }
-  Punctuation { $[.?:,] }
-
-  @precedence { Number, Punctuation }
-  @precedence { OperatorKeyword, Identifier }
-  @precedence { Boolean, Identifier }
-  @precedence { Null, Identifier }
-  @precedence { Number, Identifier }
+  @precedence {
+    NullSafeMemberOf,
+    MemberOf,
+    UnaryOperator,
+    OperatorKeyword,
+    Boolean,
+    Null,
+    Number,
+    Identifier
+  }
 }
 
 @detectDelim

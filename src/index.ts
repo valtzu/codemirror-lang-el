@@ -6,6 +6,35 @@ import {SyntaxNode, SyntaxNodeRef} from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { linter, Diagnostic } from "@codemirror/lint";
 import { hoverTooltip } from "@codemirror/view";
+//
+// enum PhpValue {
+//   Object = "object",
+//   Integer = "int",
+//   Float = "float",
+//   String = "string",
+//   Boolean = "bool",
+//   Null = "null",
+// }
+//
+// export interface ELType {
+//   name: PhpValue;
+//   properties?: [];
+//   methods?: [];
+// }
+//
+// export interface ELIdentifier {
+//   name: string;
+//   detail?: string;
+//   info?: string;
+//   type?: string|string[];
+// }
+//
+// export interface ELFunction {
+//   name: string;
+//   args: string[]; // maybe these could be ELIdentifier[] ?
+//   info?: string;
+//   returnType?: string|string[];
+// }
 
 export interface ExpressionLanguageConfig {
   identifiers?: readonly { name: string; detail?: string; info?: string }[];
@@ -20,7 +49,9 @@ const isVariable = (identifier: string, config: ExpressionLanguageConfig) => con
 const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => {
   let diagnostics: Diagnostic[] = [];
   let previousNode: SyntaxNode|null = null;
+  let indent = 0;
   syntaxTree(view.state).cursor().iterate(node => {
+    console.log(`${'  '.repeat(indent++)} ${node.name}`);
     if (node.name == "Identifier") {
       if (previousNode?.name == "Identifier" && node.node.parent?.name != 'Array') {
         diagnostics.push({
@@ -43,7 +74,7 @@ const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(vi
       }
     }
     previousNode = node.node;
-  });
+  }, ()=>indent--);
 
   return diagnostics;
 });
@@ -89,15 +120,14 @@ export const ELLanguage = LRLanguage.define({
         Boolean: t.bool,
         String: t.string,
         Number: t.number,
-        OpeningBracket: t.paren,
-        ClosingBracket: t.paren,
+        '(': t.paren,
+        ')': t.paren,
         '[': t.squareBracket,
         ']': t.squareBracket,
         OperatorKeyword: t.operatorKeyword,
         Operator: t.operator,
-        NullSafe: t.operator,
-        NullCoalescing: t.operator,
-        Punctuation: t.punctuation,
+        MemberOf: t.operator,
+        NullSafeMemberOf: t.operator,
       })
     ]
   }),
@@ -135,20 +165,22 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
 }
 
 function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, context: CompletionContext): CompletionResult | null {
-  let { state, pos, explicit } = context;
-  let tree = syntaxTree(state).resolveInner(pos, -1);
-  const isOperator = (node: SyntaxNode) => ['Operator', 'OperatorKeyword', 'Punctuation', 'NullSafe', 'NullCoalescing', 'OpeningBracket'].includes(node.name)
-  const isIdentifier = (node: SyntaxNode) => node.name === 'Identifier';
+  const { state, pos, explicit } = context;
+  const tree = syntaxTree(state).resolveInner(pos, -1);
+  const isOperator = (node: SyntaxNode|undefined) => node && ['Operator', 'OperatorKeyword'].includes(node.name);
+  const isIdentifier = (node: SyntaxNode|undefined) => node?.name === 'Identifier';
+  const prevNode = tree.parent?.node.type.isError ? tree.parent.prevSibling : tree.prevSibling;
 
   if (tree.name == 'String') {
     return null;
   }
 
-  if (tree.prevSibling && !isOperator(tree.prevSibling) && (!explicit || !isOperator(tree.node))) {
-    return completeOperatorKeyword(state, config, tree, tree.from, pos, explicit);
+  // No idea what's going on here, just added conditions until all the tests passed :)
+  if (prevNode && !isOperator(prevNode.node) && (tree.parent?.node.type.isError || tree.node.parent?.name === 'BinaryExpression') || (tree.name === 'Expression' && !tree.lastChild?.type?.isError && !isOperator(tree.lastChild?.node))) {
+    return completeOperatorKeyword(state, config, tree, tree.name !== 'Expression' ? tree.from : pos, pos, explicit);
   }
 
-  if ((!tree.prevSibling || !isIdentifier(tree.prevSibling) || isOperator(tree.node)) && (explicit || isIdentifier(tree.node))) {
+  if (tree.name === 'Expression' || isIdentifier(tree.node) || (tree.name === 'BinaryExpression' && isOperator(tree.lastChild?.prevSibling?.node) && explicit)) {
     return completeIdentifier(state, config, tree, isIdentifier(tree.node) ? tree.from : pos, pos, explicit);
   }
 
