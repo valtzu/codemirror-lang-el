@@ -2,7 +2,7 @@ import { parser } from "./syntax.grammar";
 import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, foldInside, delimitedIndent, syntaxTree } from "@codemirror/language";
 import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
 import { styleTags, tags as t } from "@lezer/highlight";
-import { SyntaxNode } from "@lezer/common";
+import {SyntaxNode, SyntaxNodeRef} from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { linter, Diagnostic } from "@codemirror/lint";
 import { hoverTooltip } from "@codemirror/view";
@@ -19,8 +19,18 @@ const isVariable = (identifier: string, config: ExpressionLanguageConfig) => con
 
 const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => {
   let diagnostics: Diagnostic[] = [];
+  let previousNode: SyntaxNode|null = null;
   syntaxTree(view.state).cursor().iterate(node => {
     if (node.name == "Identifier") {
+      if (previousNode?.name == "Identifier" && node.node.parent?.name != 'Array') {
+        diagnostics.push({
+          from: node.from,
+          to: node.to,
+          severity: 'error',
+          message: `Unexpected identifier after another identifier`,
+        });
+      }
+
       const identifier = view.state.sliceDoc(node.from,  node.to);
 
       if (!isFunction(identifier, config) && !isVariable(identifier, config)) {
@@ -32,6 +42,7 @@ const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(vi
         });
       }
     }
+    previousNode = node.node;
   });
 
   return diagnostics;
