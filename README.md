@@ -45,7 +45,7 @@
                 ],
                 functions: [
                     { name: 'smh' },
-                    { name: 'smash_my_head', args: ['object'] },
+                    { name: 'smash_my_head', args: ['object'], info: 'This is a function' },
                 ],
             })
         ],
