@@ -24,7 +24,7 @@
         "style-mod": "https://esm.sh/*style-mod@4.1.2",
         "w3c-keyname": "https://esm.sh/*w3c-keyname@2.2.8",
         "crelt": "https://esm.sh/*crelt@1.0.6",
-        "@valtzu/codemirror-lang-el": "https://esm.sh/*@valtzu/codemirror-lang-el@0.3.0"
+        "@valtzu/codemirror-lang-el": "https://esm.sh/*@valtzu/codemirror-lang-el@0.4.0"
       }
     }
 </script>
