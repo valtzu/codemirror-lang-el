@@ -77,3 +77,27 @@ Expression(Array(Array(String, String, String), Array(Array(Number, Array))))
 ==>
 
 Expression(Array(Object(Identifier, Identifier, String, Number), Object(String, String)))
+
+# Object member access after function call
+
+getObj().prop
+
+==>
+
+Expression(ObjectAccess(FunctionCall(Identifier), MemberOf, Identifier))
+
+# Object method
+
+foo.prop(123)
+
+==>
+
+Expression(FunctionCall(ObjectAccess(Identifier, MemberOf, Identifier), Number))
+
+# Object access within binary expression
+
+is_granted(user, user.self.getGroup()) + user.self
+
+==>
+
+Expression(BinaryExpression(FunctionCall(Identifier, Identifier, FunctionCall(ObjectAccess(ObjectAccess(Identifier, MemberOf, Identifier), MemberOf, Identifier))), Operator, ObjectAccess(Identifier, MemberOf, Identifier)))

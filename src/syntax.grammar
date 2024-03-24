@@ -29,15 +29,15 @@ Object {
 }
 
 ObjectAccess {
-  Identifier (NullSafeMemberOf | MemberOf) (Identifier | FunctionCall)
+  expression !left (NullSafeMemberOf | MemberOf) Identifier
 }
 
 ArrayAccess {
-  expression "[" expression "]"
+  expression !left "[" expression "]"
 }
 
 FunctionCall {
-  Identifier "(" (expression ("," expression)*)? ")"
+  (Identifier | ObjectAccess) "(" (expression ("," expression)*)? ")"
 }
 
 Array {
@@ -49,11 +49,11 @@ UnaryExpression {
 }
 
 BinaryExpression {
-  expression !left (OperatorKeyword | Operator) expression
+  expression !right (OperatorKeyword | Operator) expression
 }
 
 TernaryExpression {
-  expression !left '?' expression ':' expression
+  expression !right '?' expression ':' expression
 }
 
 @tokens {
