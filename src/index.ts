@@ -44,7 +44,7 @@ const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(vi
       const types = resolveTypes(view.state, leftArgument, config, true);
       const identifier = view.state.sliceDoc(node.from,  node.to);
 
-      if (node.node.parent?.parent?.name === 'FunctionCall') {
+      if (node.node.parent?.parent?.name === 'FunctionCall' && !node.node.parent.prevSibling) {
         if (!Array.from(types).find(type => config.types?.[type]?.functions?.find(x => x.name === identifier))) {
           diagnostics.push({
             from: node.from,

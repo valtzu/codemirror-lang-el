@@ -10,6 +10,8 @@
 
 ![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/c139cc50-077e-4f58-87e4-7ce404a445f4)
 
+[Live demo](https://jsfiddle.net/9xhezam4/)
+
 ```html
 <div id="editor"></div>
 <script type="importmap">
@@ -29,7 +31,7 @@
         "style-mod": "https://esm.sh/*style-mod@4.1.2",
         "w3c-keyname": "https://esm.sh/*w3c-keyname@2.2.8",
         "crelt": "https://esm.sh/*crelt@1.0.6",
-        "@valtzu/codemirror-lang-el": "https://esm.sh/*@valtzu/codemirror-lang-el@0.4.0"
+        "@valtzu/codemirror-lang-el": "https://esm.sh/*@valtzu/codemirror-lang-el@0.4.2"
       }
     }
 </script>
@@ -38,6 +40,7 @@
     import { acceptCompletion } from "@codemirror/autocomplete";
     import { keymap } from "@codemirror/view";
     import { expressionlanguage } from "@valtzu/codemirror-lang-el";
+    import { defaultKeymap } from "@codemirror/commands";
 
 
     let editor = new EditorView({
@@ -73,4 +76,11 @@
         doc: 'is_granted(user, user.self.getGroup())',
     });
 </script>
+<style>
+    .cm-completionDetail {
+        float: right;
+        opacity: 0.5;
+        font-style: inherit !important;
+    }
+</style>
 ```
