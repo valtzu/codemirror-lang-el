@@ -1,9 +1,14 @@
-# Symfony Expression Language support for CodeMirror
+### Symfony Expression Language support for CodeMirror
 
-### Example
+#### Features
 
-![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/928ea2e8-6061-46c9-8ac1-16f95fb5661c)
+1. Autocompletion for variables, functions, operator keywords – with (some) type resolving
+2. Hover tooltip
+3. Linting
 
+#### Example
+
+![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/c139cc50-077e-4f58-87e4-7ce404a445f4)
 
 ```html
 <div id="editor"></div>
