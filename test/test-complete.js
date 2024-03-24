@@ -12,8 +12,27 @@ function get(doc, conf = {}) {
     doc,
     selection: { anchor: cur },
     extensions: [expressionlanguage({
-      identifiers: [{name: "foobar"}, {name: "foobaz"}],
-      functions: [{name: "smh"}, {name: "smash_my_head", args: ["object"]}],
+      types: {
+        "custom44": {
+          identifiers: [
+            {name: "property11", type: ["mixed"]},
+            {name: "property22", type: ["mixed"]},
+          ],
+          functions: [
+            {name: "firstMethod", args: [], returnType: ["custom44"]},
+          ]
+        }
+      },
+      identifiers: [
+        {name: "foobar"},
+        {name: "foobaz"},
+        {name: "obj", type: ["custom44"]}
+      ],
+      functions: [
+        {name: "smh", returnType: ["string"]},
+        {name: "smash_my_head", args: ["object"]},
+        {name: "getObject", returnType: ["custom44"]},
+      ],
     })],
   });
   return state.languageDataAt("autocomplete", cur)[0](new CompletionContext(state, cur, !!conf.explicit));
@@ -60,16 +79,16 @@ describe("Expression language completion", () => {
   it("completes parameterless functions", () => {
     let c = get("sm‸").options;
     ist(c.length, 0, '>');
-    ist("smh", c[0].label);
-    ist("()", c[0].detail);
+    ist("smh()", c[0].label);
+    ist("string", c[0].detail);
     ist("smh()", c[0].apply);
   });
 
   it("completes functions with params", () => {
     let c = get("smash‸").options;
     ist(c.length, 1);
-    ist("smash_my_head", c[0].label);
-    ist("(object)", c[0].detail);
+    ist("smash_my_head(object)", c[0].label);
+    ist(undefined, c[0].detail);
     ist("smash_my_head(", c[0].apply);
   });
 
@@ -100,5 +119,55 @@ describe("Expression language completion", () => {
   it("does not complete operators when there's no previous value", () => {
     let c = get("smash_my_head(a‸").options;
     ist(c.length, 0);
+  });
+
+  it("completes object properties and methods", () => {
+    let c = get("obj.‸").options;
+    ist(c.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
+
+  it("completes object properties with partial key", () => {
+    let c = get("obj.property1‸").options;
+    ist(c.length, 1);
+    ist("property11", c[0].label);
+    ist(!c.some(o => /\W/.test(o.label)));
+  });
+
+  it("completes object methods with partial key", () => {
+    let c = get("obj.first‸").options;
+    ist(c.length, 1);
+    ist("firstMethod()", c[0].label);
+  });
+
+  it("completes object members after function call", () => {
+    let c = get("getObject().‸").options;
+    ist(c.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
+
+  it("does complete object members after method call before object accessor", () => {
+    let c = get("obj.firstMethod()‸")?.options || [];
+    ist(c.length, 0);
+  });
+
+  it("completes object members after method call", () => {
+    let c = get("obj.firstMethod().‸").options;
+    ist(c.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
+
+  it("completes object members after complex expression", () => {
+    let c = get("smash_my_head(obj.firstMethod()) + obj.‸").options;
+    ist(c.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
   });
 });

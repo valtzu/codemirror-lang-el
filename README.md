@@ -34,22 +34,38 @@
     import { keymap } from "@codemirror/view";
     import { expressionlanguage } from "@valtzu/codemirror-lang-el";
 
+
     let editor = new EditorView({
         extensions: [
             basicSetup,
-            keymap.of([{key: "Tab", run: acceptCompletion}]),
+            keymap.of([...defaultKeymap, {key: "Tab", run: acceptCompletion}]),
             expressionlanguage({
+                types: {
+                    "User": {
+                        identifiers: [
+                            { name: "self", type: ["User"], info: 'Self-reference for property-access demonstration purposes' },
+                            { name: "name", type: ["string"] },
+                            { name: "age", type: ["int"], info: "Years since birthday", detail: "years" },
+                        ],
+                        functions: [
+                            { name: "isActive", returnType: ["bool"] },
+                            { name: "getGroup", args: [], returnType: ["Group"], info: 'Get the user group' },
+                        ],
+                    },
+                    "Group": {
+                        identifiers: [{ name: "name", type: ["string"] }]
+                    }
+                },
                 identifiers: [
-                    { name: 'foo', info: 'Foo is a variable' },
-                    { name: 'bar' }
+                    { name: "user", type: ["User"], info: 'This is the user' },
                 ],
                 functions: [
-                    { name: 'smh' },
-                    { name: 'smash_my_head', args: ['object'], info: 'This is a function' },
+                    { name: "is_granted", args: ["subject", "object"], info: 'Check if subject has permission to the object', returnType: ['bool'] },
                 ],
             })
         ],
         parent: document.getElementById('editor'),
+        doc: 'is_granted(user, user.self.getGroup())',
     });
 </script>
 ```
