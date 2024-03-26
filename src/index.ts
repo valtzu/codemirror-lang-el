@@ -34,65 +34,53 @@ const isVariable = (identifier: string, config: ExpressionLanguageConfig) => con
 const autocompleteFunction = (x: ELFunction) => ({ label: `${x.name}(${x.args?.join(',') || ''})`, apply: `${x.name}(${!x.args?.length ? ')' : ''}`, detail: x.returnType?.join('|'), info: x.info, type: "function" });
 const autocompleteIdentifier = (x: ELIdentifier) => ({ label: x.name, apply: x.name, info: x.info, detail: x.detail || x.type?.join('|'), type: 'variable' });
 
-const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => {
+export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig) => (state: EditorState) => {
   let diagnostics: Diagnostic[] = [];
-  let previousNode: SyntaxNode|null = null;
 
-  syntaxTree(view.state).cursor().iterate(node => {
+  syntaxTree(state).cursor().iterate(node => {
+    const { from, to, name } = node;
     if (node.node.parent?.name == 'ObjectAccess' && node.node.parent?.firstChild && node.name == "Identifier" && node.node.prevSibling) {
       const leftArgument = node.node.parent.firstChild.node;
-      const types = resolveTypes(view.state, leftArgument, config, true);
-      const identifier = view.state.sliceDoc(node.from,  node.to);
+      const types = Array.from(resolveTypes(state, leftArgument, config, true));
+      const identifier = state.sliceDoc(node.from,  node.to);
+      const isMethodName = node.node.parent?.parent?.name === 'FunctionCall' && !node.node.parent.prevSibling;
 
-      if (node.node.parent?.parent?.name === 'FunctionCall' && !node.node.parent.prevSibling) {
-        if (!Array.from(types).find(type => config.types?.[type]?.functions?.find(x => x.name === identifier))) {
-          diagnostics.push({
-            from: node.from,
-            to: node.to,
-            severity: 'error',
-            message: `Method '${identifier}' not found in ${Array.from(types).join('|')}`,
-          });
+      if (isMethodName) {
+        if (!types.find(type => config.types?.[type]?.functions?.find(x => x.name === identifier))) {
+          diagnostics.push({ from, to, severity: 'error', message: `Method '${identifier}' not found in ${types.join('|')}` });
         }
-      } else if (types.size > 0) {
-        if (!Array.from(types).find(type => config.types?.[type]?.identifiers?.find(x => x.name === identifier))) {
-          diagnostics.push({
-            from: node.from,
-            to: node.to,
-            severity: 'warning',
-            message: `Property '${identifier}' not found in ${Array.from(types).join('|')}`,
-          });
+      }
+
+      if (!isMethodName && types.length > 0) {
+        if (!types.find(type => config.types?.[type]?.identifiers?.find(x => x.name === identifier))) {
+          diagnostics.push({ from, to, severity: 'warning', message: `Property '${identifier}' not found in ${types.join('|')}` });
         }
       }
 
       return;
     }
 
-    if (node.name == "Identifier") {
-      if (previousNode?.name == "Identifier" && !['Array', 'FunctionCall'].includes(node.node.parent?.name || '')) {
-        diagnostics.push({
-          from: node.from,
-          to: node.to,
-          severity: 'error',
-          message: `Unexpected identifier after another identifier`,
-        });
+    if (name == "Identifier") {
+      const identifier = state.sliceDoc(node.from, node.to);
+      const isFunctionName = node.node.parent?.name == 'FunctionCall' && !node.node.prevSibling;
+
+      if (node.node.parent?.type.isError) {
+        diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier '${identifier}'` });
       }
 
-      const identifier = view.state.sliceDoc(node.from,  node.to);
-
-      if (!isFunction(identifier, config) && !isVariable(identifier, config)) {
-        diagnostics.push({
-          from: node.from,
-          to: node.to,
-          severity: 'error',
-          message: `Identifier "${identifier}" not found`,
-        });
+      if (!isFunctionName && !isVariable(identifier, config)) {
+        diagnostics.push({ from, to, severity: 'error', message: `Variable "${identifier}" not found` });
+      }
+      if (isFunctionName && !isFunction(identifier, config)) {
+        diagnostics.push({ from, to, severity: 'error', message: `Function "${identifier}" not found` });
       }
     }
-    previousNode = node.node;
   });
 
   return diagnostics;
-});
+};
+
+const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => expressionLanguageLinterSource(config)(view.state));
 
 export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip((view, pos, side) => {
   const tree = syntaxTree(view.state).resolveInner(pos, side);
