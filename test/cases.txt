@@ -54,9 +54,25 @@ Expression(TernaryExpression(Identifier, String, String))
 
 Expression(Array(String, String, String))
 
+# Unary operator
+
+not this
+
+==>
+
+Expression(UnaryExpression(UnaryOperator, Identifier))
+
+# Multi-word operators
+
+"ab" starts with "a"
+
+==>
+
+Expression(BinaryExpression(String, OperatorKeyword, String))
+
 # Binary operators
 
-[1 + 2, true || false, "ab" starts with "a"]
+[1 + 2, true || false, "ab" contains "a"]
 
 ==>
 
@@ -101,3 +117,11 @@ is_granted(user, user.self.getGroup()) + user.self
 ==>
 
 Expression(BinaryExpression(FunctionCall(Identifier, Identifier, FunctionCall(ObjectAccess(ObjectAccess(Identifier, MemberOf, Identifier), MemberOf, Identifier))), Operator, ObjectAccess(Identifier, MemberOf, Identifier)))
+
+# Keywords require breaking character
+
+andnotfound
+
+==>
+
+Expression(Identifier)
