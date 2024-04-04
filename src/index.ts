@@ -28,52 +28,53 @@ export interface ExpressionLanguageConfig {
   operatorKeywords?: readonly { name: string; detail?: string, info?: string }[];
 }
 
-const isFunction = (identifier: string, config: ExpressionLanguageConfig) => config.functions?.find(fn => fn.name === identifier);
-const isVariable = (identifier: string, config: ExpressionLanguageConfig) => config.identifiers?.find(variable => variable.name === identifier);
-
 const autocompleteFunction = (x: ELFunction) => ({ label: `${x.name}(${x.args?.join(',') || ''})`, apply: `${x.name}(${!x.args?.length ? ')' : ''}`, detail: x.returnType?.join('|'), info: x.info, type: "function" });
 const autocompleteIdentifier = (x: ELIdentifier) => ({ label: x.name, apply: x.name, info: x.info, detail: x.detail || x.type?.join('|'), type: 'variable' });
+const matchingIdentifier = (identifier: string) => (x: ELFunction | ELIdentifier) => x.name === identifier;
+
+const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' | 'Variable', identifier?: string, config?: { identifiers?: ELIdentifier[], functions?: ELFunction[] }): ELIdentifier|ELFunction|undefined => {
+  switch (nodeName) {
+    case 'Method':
+    case 'Function':
+      return config?.functions?.find(x => x.name === identifier);
+    case 'Property':
+    case 'Variable':
+      return config?.identifiers?.find(x => x.name === identifier);
+  }
+};
 
 export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig) => (state: EditorState) => {
   let diagnostics: Diagnostic[] = [];
 
   syntaxTree(state).cursor().iterate(node => {
     const { from, to, name } = node;
-    if (node.node.parent?.name == 'ObjectAccess' && node.node.parent?.firstChild && node.name == "Identifier" && node.node.prevSibling) {
-      const leftArgument = node.node.parent.firstChild.node;
-      const types = Array.from(resolveTypes(state, leftArgument, config, true));
-      const identifier = state.sliceDoc(node.from,  node.to);
-      const isMethodName = node.node.parent?.parent?.name === 'FunctionCall' && !node.node.parent.prevSibling;
 
-      if (isMethodName) {
-        if (!types.find(type => config.types?.[type]?.functions?.find(x => x.name === identifier))) {
-          diagnostics.push({ from, to, severity: 'error', message: `Method '${identifier}' not found in ${types.join('|')}` });
+    let identifier: string|undefined;
+    switch (name) {
+      case 'Property':
+      case 'Method':
+        const leftArgument = node.node.parent?.firstChild?.node;
+        const types = Array.from(resolveTypes(state, leftArgument, config, true));
+        identifier = state.sliceDoc(node.from,  node.to);
+
+        if (!types.find(type => resolveIdentifier(name, identifier, config.types?.[type]))) {
+          diagnostics.push({ from, to, severity: 'error', message: `${node.name} "${identifier}" not found in ${types.join('|')}` });
         }
-      }
 
-      if (!isMethodName && types.length > 0) {
-        if (!types.find(type => config.types?.[type]?.identifiers?.find(x => x.name === identifier))) {
-          diagnostics.push({ from, to, severity: 'warning', message: `Property '${identifier}' not found in ${types.join('|')}` });
+        break;
+
+      case 'Variable':
+      case 'Function':
+        identifier = state.sliceDoc(node.from,  node.to);
+        if (!resolveIdentifier(name, identifier, config)) {
+          diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} "${identifier}" not found` });
         }
-      }
 
-      return;
+        break;
     }
 
-    if (name == "Identifier") {
-      const identifier = state.sliceDoc(node.from, node.to);
-      const isFunctionName = node.node.parent?.name == 'FunctionCall' && !node.node.prevSibling;
-
-      if (node.node.parent?.type.isError) {
-        diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier '${identifier}'` });
-      }
-
-      if (!isFunctionName && !isVariable(identifier, config)) {
-        diagnostics.push({ from, to, severity: 'error', message: `Variable "${identifier}" not found` });
-      }
-      if (isFunctionName && !isFunction(identifier, config)) {
-        diagnostics.push({ from, to, severity: 'error', message: `Function "${identifier}" not found` });
-      }
+    if (identifier && node.node.parent?.type.isError) {
+      diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier "${identifier}"` });
     }
   });
 
@@ -93,11 +94,11 @@ export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip
   let info: string;
   if (tree.parent?.firstChild && tree.parent?.name === 'ObjectAccess' && tree.prevSibling) {
     const node = tree.parent.firstChild;
-    const types = resolveTypes(view.state, node, config, true);
+    const types = Array.from(resolveTypes(view.state, node, config, true));
     const name = view.state.sliceDoc(tree.from, tree.to);
     info = [
-      ...Array.from(types).map(type => config.types?.[type]?.identifiers?.find(x => x.name === name)?.info).filter(skipEmpty),
-      ...Array.from(types).map(type => config.types?.[type]?.functions?.find(x => x.name === name)?.info).filter(skipEmpty),
+      ...types.map(type => config.types?.[type]?.identifiers?.find(x => x.name === name)?.info).filter(skipEmpty),
+      ...types.map(type => config.types?.[type]?.functions?.find(x => x.name === name)?.info).filter(skipEmpty),
     ].join('\n');
   } else {
     const name = view.state.sliceDoc(tree.from, tree.to);
@@ -116,7 +117,7 @@ export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip
     end: tree.to,
     above: true,
     create(view) {
-      let dom = document.createElement("div")
+      const dom = document.createElement("div")
       dom.textContent = info;
       dom.className = 'cm-diagnostic';
       return { dom };
@@ -134,7 +135,10 @@ export const ELLanguage = LRLanguage.define({
         Application: foldInside
       }),
       styleTags({
-        Identifier: t.variableName,
+        Property: t.propertyName,
+        Variable: t.variableName,
+        Function: t.function(t.variableName),
+        Method: t.function(t.propertyName),
         Boolean: t.bool,
         String: t.string,
         Number: t.number,
@@ -142,10 +146,12 @@ export const ELLanguage = LRLanguage.define({
         ')': t.paren,
         '[': t.squareBracket,
         ']': t.squareBracket,
+        ',': t.punctuation,
+        MemberOf: t.punctuation,
+        NullSafeMemberOf: t.punctuation,
         OperatorKeyword: t.operatorKeyword,
+        UnaryOperator: t.operator,
         Operator: t.operator,
-        MemberOf: t.operator,
-        NullSafeMemberOf: t.operator,
       })
     ]
   }),
@@ -154,52 +160,54 @@ export const ELLanguage = LRLanguage.define({
 })
 
 function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult {
-  const text = state.sliceDoc(from, to);
-
   return {
     from,
     to,
-    options: config.operatorKeywords?.filter(({ name }) => explicit || name.startsWith(text)).map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
-    validFor: (text: string) => config.operatorKeywords?.some(({ name }) => explicit || name.startsWith(text)) ?? false,
+    options: config.operatorKeywords?.map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
+    validFor: (text: string) => config.operatorKeywords?.some(({ name }) => explicit || name.includes(text)) ?? false,
   };
 }
 
-function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult {
-  const text = state.sliceDoc(from, to).toLowerCase();
-  const identifiers = config.identifiers?.filter(({ name }) => explicit || name.toLowerCase().startsWith(text)) ?? [];
-  const functions = config.functions?.filter(({ name }) => explicit || name.toLowerCase().startsWith(text)) ?? [];
+function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): CompletionResult {
+  const identifiers = config.identifiers ?? [];//?.filter(({ name }) => explicit || name.toLowerCase().startsWith(text)) ?? [];
+  const functions = config.functions ?? [];//?.filter(({ name }) => explicit || name.toLowerCase().startsWith(text)) ?? [];
 
   return {
     from,
     to,
     options: [...(identifiers.map(autocompleteIdentifier)), ...(functions.map(autocompleteFunction))],
-    // validFor: identifier,
-    filter: false,
+    validFor: /^[a-zA-Z_]+[a-zA-Z_0-9]*$/,
   };
 }
 
-function resolveTypes(state: EditorState, node: SyntaxNode, config: ExpressionLanguageConfig, matchExact: boolean): Set<string>  {
+function resolveTypes(state: EditorState, node: SyntaxNode|undefined, config: ExpressionLanguageConfig, matchExact: boolean): Set<string>  {
   let types: Set<string> = new Set<string>();
+  if (!node) {
+    return types;
+  }
 
-  if (node.name === 'FunctionCall' && node.firstChild && node.lastChild) {
+  if (node.name === 'Call' && node.firstChild && node.lastChild) {
     resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
-  } else if (node.name === 'Identifier') {
+  } else if (node.name === 'Variable') {
     const varName = state.sliceDoc(node.from, node.to) || '';
-    config.functions?.find(x => x.name == varName)?.returnType?.forEach(x => types.add(x));
-    config.identifiers?.find(x => x.name == varName)?.type?.forEach(x => types.add(x));
-  } else if (node.name === 'ObjectAccess' && node.firstChild && node.lastChild?.name === 'Identifier') {
-    const baseTypes = resolveTypes(state, node.firstChild, config, matchExact);
+    // @ts-ignore
+    resolveIdentifier(node.name, varName, config)?.type?.forEach((x: string) => types.add(x));
+  } else if (node.name === 'Function') {
+    const varName = state.sliceDoc(node.from, node.to) || '';
+    // @ts-ignore
+    resolveIdentifier(node.name, varName, config)?.returnType?.forEach((x: string) => types.add(x));
+  } else if (node.name === 'ObjectAccess' && node.firstChild && node.lastChild?.name === 'Property') {
     const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
-
-    for (const baseType of baseTypes) {
-      const type = config.types?.[baseType];
-      type?.functions
-        ?.filter(x => matchExact ? x.name === varName : x.name.startsWith(varName))
-        ?.forEach(def => (def.returnType || ['any']).forEach(x => types.add(x)));
-      type?.identifiers
-        ?.filter(x => matchExact ? x.name === varName : x.name.startsWith(varName))
-        ?.forEach(def => (def.type || ['any']).forEach(x => types.add(x)));
-    }
+    resolveTypes(state, node.firstChild, config, matchExact)?.forEach(baseType => {
+      // @ts-ignore
+      resolveIdentifier(node.lastChild?.name, varName, config.types?.[baseType])?.type?.forEach((x: string) => types.add(x));
+    });
+  } else if (node.name === 'ObjectAccess' && node.firstChild && node.lastChild?.name === 'Method') {
+    const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
+    resolveTypes(state, node.firstChild, config, matchExact)?.forEach(baseType => {
+      // @ts-ignore
+      resolveIdentifier(node.lastChild?.name, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
+    });
   }
 
   if (types.size === 0) {
@@ -214,18 +222,18 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
     return null;
   }
 
+  const varName = state.sliceDoc(from, to);
   const types = resolveTypes(state, tree.parent.firstChild.node, config, false);
   if (!types?.size) {
     return null;
-  }
 
-  const varName = state.sliceDoc(from, to);
+  }
   let options = [];
   for (const type of types) {
     const typeDeclaration = config.types?.[type];
     options.push(
-      ...(typeDeclaration?.identifiers?.filter(x => x.name.startsWith(varName)).map(autocompleteIdentifier) || []),
-      ...(typeDeclaration?.functions?.filter(x => x.name.startsWith(varName)).map(autocompleteFunction) || []),
+      ...(typeDeclaration?.identifiers?.map(autocompleteIdentifier) || []),
+      ...(typeDeclaration?.functions?.map(autocompleteFunction) || []),
     );
   }
 
@@ -233,32 +241,39 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
     from,
     to,
     options,
-    filter: false,
+    validFor: /^[a-zA-Z_]+[a-zA-Z_0-9]*$/,
   };
 }
 
 function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, context: CompletionContext): CompletionResult | null {
   const { state, pos, explicit } = context;
-  const tree = syntaxTree(state).resolveInner(pos, -1);
-  const isOperator = (node: SyntaxNode|undefined) => node && ['Operator', 'OperatorKeyword'].includes(node.name);
-  const isIdentifier = (node: SyntaxNode|undefined) => node?.name === 'Identifier';
-  const prevNode = tree.parent?.node.type.isError ? tree.parent.prevSibling : tree.prevSibling;
+  const node = syntaxTree(state).resolveInner(pos, -1);
+  const isIdentifier = (node: SyntaxNode|undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
+  const isMember = (node: SyntaxNode|undefined) => ['Property', 'Method'].includes(node?.name ?? '');
 
-  if (tree.name == 'String') {
+  if (node.name == 'String') {
     return null;
   }
 
-  if (tree.parent?.name == 'ObjectAccess' && ['ObjectAccess', 'ArrayAccess', 'Identifier', 'FunctionCall'].includes(tree.parent.firstChild?.name || '')) {
-    return completeMember(state, config, tree, isIdentifier(tree.node) ? tree.from : pos, pos, explicit);
+  if (node.parent?.name == 'ObjectAccess' && ['ObjectAccess', 'ArrayAccess', 'Variable', 'Call'].includes(node.parent.firstChild?.name || '')) {
+    return completeMember(state, config, node, isIdentifier(node) || isMember(node) ? node.from : pos, pos, explicit);
   }
 
-  // No idea what's going on here, just added conditions until all the tests passed :)
-  if (prevNode && !isOperator(prevNode.node) && (tree.parent?.node.type.isError || tree.node.parent?.name === 'BinaryExpression') || (tree.name === 'Expression' && !tree.lastChild?.type?.isError && !isOperator(tree.lastChild?.node))) {
-    return completeOperatorKeyword(state, config, tree, tree.name !== 'Expression' ? tree.from : pos, pos, explicit);
+  if (
+    ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(node.name) && node.lastChild && !node.lastChild?.type.isError
+    || ['Arguments', 'Array'].includes(node.name) && node.lastChild && !node.lastChild?.type.isError
+    || ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(node.parent?.name ?? '') && node.type.isError
+    || ['Variable', 'Function'].includes(node.parent?.name ?? '') && node.type.isError
+  ) {
+    return completeOperatorKeyword(state, config, node, !['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression', 'Arguments'].includes(node.name) ? node.from : pos, pos, explicit);
   }
 
-  if (tree.name === 'Expression' || isIdentifier(tree.node) || (tree.name === 'BinaryExpression' && isOperator(tree.lastChild?.prevSibling?.node) && explicit)) {
-    return completeIdentifier(state, config, tree, isIdentifier(tree.node) ? tree.from : pos, pos, explicit);
+  if (
+    ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(node.name) && node.lastChild?.type.isError
+    || ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression', 'Arguments'].includes(node.parent?.name ?? '') && !node.type.isError
+    || ['Arguments', 'Array'].includes(node.name ?? '')
+  ) {
+    return completeIdentifier(state, config, node, isIdentifier(node) ? node.from : pos, pos);
   }
 
   return null;

@@ -6,45 +6,46 @@
   right @right
 }
 
-@top Expression { expression }
-
 @skip { space }
 
+@top Expression { expression }
+
 expression {
-  ObjectAccess |
+  ObjectAccess<Property> |
   ArrayAccess |
-  FunctionCall |
+  Call |
   Number |
   String |
   Boolean |
   Null |
   Object |
   Array |
-  Identifier |
+  Variable |
   TernaryExpression |
   BinaryExpression |
   UnaryExpression |
-  "(" expression ")"
+  Application { "(" expression ")" }
+}
+
+Variable { word }
+Function { word }
+Property { word }
+Method { word }
+
+list {
+  (expression ("," expression)*)?
 }
 
 Object {
   "{" (expression ":" expression ("," expression ":" expression)*)? "}"
 }
 
-ObjectAccess {
-  expression !left (NullSafeMemberOf | MemberOf) Identifier
-}
-
 ArrayAccess {
   expression !left "[" expression "]"
 }
 
-FunctionCall {
-  (Identifier | ObjectAccess) "(" (expression ("," expression)*)? ")"
-}
-
 Array {
-  "[" (expression ("," expression)*)? "]"
+  "[" list "]"
 }
 
 UnaryExpression {
@@ -55,13 +56,26 @@ BinaryExpression {
   expression !right (OperatorKeyword | Operator) expression
 }
 
+ObjectAccess<member> {
+  expression !left ( MemberOf | NullSafeMemberOf ) member
+}
+
+call<callable> {
+  callable Arguments { "(" list ")" }
+}
+
+Call {
+  call<Function> |
+  call<ObjectAccess<Method>>
+}
+
 TernaryExpression {
   expression !right '?' expression ':' expression
 }
 
 @tokens {
   Number { (($[0-9]+('_' $[0-9]+)*('.' (![.])($[0-9]+('_' $[0-9]+)*)?)?)($[eE]$[+-]?$[0-9]+('_' $[0-9]+)*)?) }
-  Identifier { $[a-zA-Z_]+$[a-zA-Z_0-9]* }
+  word { $[a-zA-Z_]+$[a-zA-Z_0-9]* }
   String { ( '"' (!["\\] | "\\" _)* ('"' | @eof) ) | "'" (!['\\] | "\\" _)* ("'" | @eof) }
 
   space { $[ \t\n\r]+ }
@@ -73,15 +87,15 @@ TernaryExpression {
   @precedence {
     String,
     Operator,
-    NullSafeMemberOf,
     MemberOf,
+    NullSafeMemberOf,
     Number,
-    Identifier
+    word
   }
 }
 
 o<term> { @extend<Operator, term> }
-k<term> { @specialize<Identifier, term> }
+k<term> { @specialize<word, term> }
 
 Boolean { k<'true'> | k<'false'> }
 Null { k<'null'> }

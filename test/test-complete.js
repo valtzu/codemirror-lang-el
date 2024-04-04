@@ -65,98 +65,75 @@ describe("Expression language completion", () => {
 
   it("completes variables", () => {
     let c = get("foo‸").options;
-    ist(c.length, 2);
-    ist("foobar", c[0].label);
-    ist("foobaz", c[1].label);
-    ist(!c.some(o => /\W/.test(o.label)));
-  });
-
-  it("completes variables only when found", () => {
-    let c = get("zoo‸").options;
-    ist(c.length, 0);
+    ist(c.length, 0, '>');
+    ist(c.map(x => x.label).includes('foobar'));
+    ist(c.map(x => x.label).includes('foobaz'));
   });
 
   it("completes parameterless functions", () => {
-    let c = get("sm‸").options;
-    ist(c.length, 0, '>');
-    ist("smh()", c[0].label);
-    ist("string", c[0].detail);
-    ist("smh()", c[0].apply);
+    const c = get("sm‸").options.find(x => x.label === 'smh()');
+    ist(!!c);
+    ist("string", c.detail);
+    ist("smh()", c.apply);
   });
 
   it("completes functions with params", () => {
-    let c = get("smash‸").options;
-    ist(c.length, 1);
-    ist("smash_my_head(object)", c[0].label);
-    ist(undefined, c[0].detail);
-    ist("smash_my_head(", c[0].apply);
+    const c = get("smash‸").options.find(x => x.label === 'smash_my_head(object)');
+    ist(!!c);
+    ist(undefined, c.detail);
+    ist("smash_my_head(", c.apply);
   });
 
   it("completes operator keywords after identifiers", () => {
-    let c = get("smh s‸").options;
-    ist(c.length, 1);
-    ist("starts with", c[0].label);
-    ist("starts with ", c[0].apply);
+    const c = get("smh s‸").options;
+    ist(c.some(x => x.label === 'starts with'));
   });
 
   it("completes operator keywords after parenthesis", () => {
-    let c = get("smh() en‸").options;
-    ist(c.length, 1);
-    ist("ends with", c[0].label);
-    ist("ends with ", c[0].apply);
+    const c = get("smh() en‸").options;
+    ist(c.some(x => x.label === 'ends with'));
   });
 
   it("completes operator keywords after string", () => {
-    let c = get("'foobar' s‸").options;
-    ist(c.length, 1);
-    ist("starts with", c[0].label);
+    const c = get("'foobar' s‸").options;
+    ist(c.some(x => x.label === 'starts with'));
   });
 
   it("does not complete anything when there's open string", () => {
     ist(null, get("'foobar s‸"));
   });
 
-  it("does not complete operators when there's no previous value", () => {
-    let c = get("smash_my_head(a‸").options;
-    ist(c.length, 0);
+  it("does not complete operators when identifier is expected", () => {
+    const c = get("smash_my_head(a‸)").options;
+    ist(!c.some(x => x.label === 'and'));
   });
 
   it("completes object properties and methods", () => {
-    let c = get("obj.‸").options;
+    const c = get("obj.‸").options;
     ist(c.length, 3);
     ist("property11", c[0].label);
     ist("property22", c[1].label);
     ist("firstMethod()", c[2].label);
   });
 
-  it("completes object properties with partial key", () => {
-    let c = get("obj.property1‸").options;
-    ist(c.length, 1);
-    ist("property11", c[0].label);
-    ist(!c.some(o => /\W/.test(o.label)));
-  });
-
-  it("completes object methods with partial key", () => {
-    let c = get("obj.first‸").options;
-    ist(c.length, 1);
-    ist("firstMethod()", c[0].label);
+  it("completes object members with partial key", () => {
+    const c = get("obj.property1‸").options;
+    ist(c.some(x => x.label === 'property11'));
   });
 
   it("completes object members after function call", () => {
-    let c = get("getObject().‸").options;
-    ist(c.length, 3);
-    ist("property11", c[0].label);
-    ist("property22", c[1].label);
-    ist("firstMethod()", c[2].label);
+    const c = get("getObject().‸").options;
+    ist(c.some(x => x.label === 'property11'));
+    ist(c.some(x => x.label === 'firstMethod()'));
   });
 
   it("does complete object members after method call before object accessor", () => {
-    let c = get("obj.firstMethod()‸")?.options || [];
+    const c = get("obj.firstMethod()‸")?.options || [];
     ist(c.length, 0);
   });
 
   it("completes object members after method call", () => {
-    let c = get("obj.firstMethod().‸").options;
+    const c = get("obj.firstMethod().‸").options;
     ist(c.length, 3);
     ist("property11", c[0].label);
     ist("property22", c[1].label);

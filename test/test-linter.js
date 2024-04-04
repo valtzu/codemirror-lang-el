@@ -1,6 +1,7 @@
 import {EditorState} from "@codemirror/state";
 import {expressionlanguage, expressionLanguageLinterSource} from "../dist/index.js";
 import ist from "ist"
+import {syntaxTree} from "@codemirror/language";
 
 const config = {
   types: {
@@ -33,6 +34,9 @@ function get(doc) {
     extensions: [expressionlanguage(config)],
   });
 
+  syntaxTree(state).cursor().iterate((node) => process.stdout.write(node.name + '('), () => process.stdout.write(')'));
+  process.stdout.write('\n');
+
   return elLinter(state);
 }
 
@@ -62,5 +66,24 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].message, "Unexpected identifier 'obj'");
     ist(diagnostics[0].from, 4);
     ist(diagnostics[0].to, 7);
+  });
+
+  it("complains about multiple binary operators in row", () => {
+    const diagnostics = get("obj ~~ obj");
+    // Expression(
+    //   BinaryExpression(
+    //     BinaryExpression(
+    //       Identifier()
+    //       Operator()
+    //       ⚠()
+    //     )
+    //     Operator()
+    //     Identifier()
+    //   )
+    // )
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].message, "Unexpected operator ~");
+    ist(diagnostics[0].from, 4);
+    ist(diagnostics[0].to, 5);
   });
 });

@@ -20,7 +20,7 @@ Expression(Array(Number, Number, Number, Number))
 
 ==>
 
-Expression(Array(Identifier, Identifier))
+Expression(Array(Variable, Variable))
 
 # Null-safe property/method access
 
@@ -28,7 +28,7 @@ one?.two
 
 ==>
 
-Expression(ObjectAccess(Identifier, NullSafeMemberOf, Identifier))
+Expression(ObjectAccess(Variable, NullSafeMemberOf, Property))
 
 # Null-coalescing operator
 
@@ -36,7 +36,7 @@ one ?? "two"
 
 ==>
 
-Expression(BinaryExpression(Identifier, Operator, String))
+Expression(BinaryExpression(Variable, Operator, String))
 
 # Ternary expression
 
@@ -44,7 +44,7 @@ condition ? "yes" : "no"
 
 ==>
 
-Expression(TernaryExpression(Identifier, String, String))
+Expression(TernaryExpression(Variable, String, String))
 
 # Strings
 
@@ -60,7 +60,7 @@ not this
 
 ==>
 
-Expression(UnaryExpression(UnaryOperator, Identifier))
+Expression(UnaryExpression(UnaryOperator, Variable))
 
 # Multi-word operators
 
@@ -92,7 +92,7 @@ Expression(Array(Array(String, String, String), Array(Array(Number, Array))))
 
 ==>
 
-Expression(Array(Object(Identifier, Identifier, String, Number), Object(String, String)))
+Expression(Array(Object(Variable, Variable, String, Number), Object(String, String)))
 
 # Object member access after function call
 
@@ -100,7 +100,7 @@ getObj().prop
 
 ==>
 
-Expression(ObjectAccess(FunctionCall(Identifier), MemberOf, Identifier))
+Expression(ObjectAccess(Call(Function, Arguments), MemberOf, Property))
 
 # Object method
 
@@ -108,7 +108,7 @@ foo.prop(123)
 
 ==>
 
-Expression(FunctionCall(ObjectAccess(Identifier, MemberOf, Identifier), Number))
+Expression(Call(ObjectAccess(Variable, MemberOf, Method), Arguments(Number)))
 
 # Object access within binary expression
 
@@ -116,7 +116,7 @@ is_granted(user, user.self.getGroup()) + user.self
 
 ==>
 
-Expression(BinaryExpression(FunctionCall(Identifier, Identifier, FunctionCall(ObjectAccess(ObjectAccess(Identifier, MemberOf, Identifier), MemberOf, Identifier))), Operator, ObjectAccess(Identifier, MemberOf, Identifier)))
+Expression(BinaryExpression(Call(Function, Arguments(Variable, Call(ObjectAccess(ObjectAccess(Variable, MemberOf, Property), MemberOf, Method), Arguments))), Operator, ObjectAccess(Variable, MemberOf, Property)))
 
 # Keywords require breaking character
 
@@ -124,4 +124,4 @@ andnotfound
 
 ==>
 
-Expression(Identifier)
+Expression(Variable)
