@@ -127,9 +127,11 @@ describe("Expression language completion", () => {
     ist(c.some(x => x.label === 'firstMethod()'));
   });
 
-  it("does complete object members after method call before object accessor", () => {
+  it("completes only operators after method call", () => {
     const c = get("obj.firstMethod()‸")?.options || [];
-    ist(c.length, 0);
+    ist(!c.find(x => x.label === 'firstMethod()'));
+    ist(!c.find(x => x.label === 'obj'));
+    ist(c.find(x => x.label === 'starts with'));
   });
 
   it("completes object members after method call", () => {

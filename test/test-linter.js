@@ -34,8 +34,10 @@ function get(doc) {
     extensions: [expressionlanguage(config)],
   });
 
-  syntaxTree(state).cursor().iterate((node) => process.stdout.write(node.name + '('), () => process.stdout.write(')'));
-  process.stdout.write('\n');
+  if (process.env.DEBUG) {
+    syntaxTree(state).cursor().iterate((node) => process.stdout.write(node.name + '('), () => process.stdout.write(')'));
+    process.stdout.write('\n');
+  }
 
   return elLinter(state);
 }
@@ -70,20 +72,10 @@ describe("Expression language linting", () => {
 
   it("complains about multiple binary operators in row", () => {
     const diagnostics = get("obj ~~ obj");
-    // Expression(
-    //   BinaryExpression(
-    //     BinaryExpression(
-    //       Identifier()
-    //       Operator()
-    //       ⚠()
-    //     )
-    //     Operator()
-    //     Identifier()
-    //   )
-    // )
+
     ist(diagnostics.length, 1);
-    ist(diagnostics[0].message, "Unexpected operator ~");
-    ist(diagnostics[0].from, 4);
-    ist(diagnostics[0].to, 5);
+    ist(diagnostics[0].from, 5);
+    ist(diagnostics[0].to, 10);
+    ist(diagnostics[0].message, "Expression expected");
   });
 });
