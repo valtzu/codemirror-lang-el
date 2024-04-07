@@ -101,7 +101,7 @@ const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(vi
 export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip((view, pos, side) => {
   const tree = syntaxTree(view.state).resolveInner(pos, side);
 
-  if (tree.name !== 'Identifier') {
+  if (!['Function', 'Variable', 'Method', 'Property'].includes(tree.name)) {
     return null;
   }
 
