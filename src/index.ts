@@ -4,9 +4,10 @@ import { Completion, CompletionContext, CompletionResult, insertCompletionText }
 import { EditorView } from "@codemirror/view";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { SyntaxNode } from "@lezer/common";
-import { EditorState } from "@codemirror/state";
+import { EditorState, StateField } from "@codemirror/state";
 import { linter, Diagnostic } from "@codemirror/lint";
-import { hoverTooltip } from "@codemirror/view";
+import { hoverTooltip, Tooltip, showTooltip } from "@codemirror/view";
+
 
 export interface ELIdentifier {
   name: string;
@@ -44,18 +45,121 @@ const autocompleteFunction = (x: ELFunction) => ({
   info: x.info, type: "function"
 });
 const autocompleteIdentifier = (x: ELIdentifier) => ({ label: x.name, apply: x.name, info: x.info, detail: x.detail || x.type?.join('|'), type: 'variable' });
-const matchingIdentifier = (identifier: string) => (x: ELFunction | ELIdentifier) => x.name === identifier;
+
+const resolveCallable = (identifier?: string, config?: { identifiers?: ELIdentifier[], functions?: ELFunction[] }) => config?.functions?.find(x => x.name === identifier);
 
 const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' | 'Variable', identifier?: string, config?: { identifiers?: ELIdentifier[], functions?: ELFunction[] }): ELIdentifier|ELFunction|undefined => {
   switch (nodeName) {
     case 'Method':
     case 'Function':
-      return config?.functions?.find(x => x.name === identifier);
+      return resolveCallable(identifier, config);
     case 'Property':
     case 'Variable':
       return config?.identifiers?.find(x => x.name === identifier);
   }
 };
+const cursorTooltipBaseTheme = EditorView.baseTheme({
+  ".cm-tooltip.cm-tooltip-cursor": {
+    boxShadow: 'rgba(0, 0, 0, .15) 0 1px 2px',
+    border: "1px solid rgba(127, 127, 127, .2)",
+    padding: "2px 7px",
+    borderRadius: "4px",
+    "& .cm-tooltip-arrow:before": {
+    },
+    "& .cm-tooltip-arrow:after": {
+      borderTopColor: "transparent"
+    }
+  }
+});
+
+function getNodeOrdinal(node: SyntaxNode) {
+  let ordinal = -1;
+
+  for (let c: SyntaxNode|null = node; c; c = c.prevSibling, ordinal++);
+
+  return ordinal;
+}
+
+function resolveArguments(node: SyntaxNode) {
+  let c: SyntaxNode|null = node;
+
+  while (c && c.name !== 'Arguments') {
+    c = c.parent;
+  }
+
+  return c;
+}
+
+function resolveFunctionDefinition(node: SyntaxNode|null, state: EditorState, config: ExpressionLanguageConfig) {
+  if (!node) {
+    return undefined;
+  }
+
+  let identifier: string|undefined;
+  if (node.name === 'ObjectAccess' && node.lastChild) {
+    const leftArgument = node.firstChild?.node;
+    const types = Array.from(resolveTypes(state, leftArgument, config, true));
+    identifier = state.sliceDoc(node.lastChild.from, node.lastChild.to);
+
+    return types.map(type => resolveCallable(identifier, config.types?.[type])).find(x => x);
+  } else if (node.name === 'Function') {
+    identifier = state.sliceDoc(node.from, node.node.firstChild ? node.node.firstChild.from - 1 : node.to);
+
+    return resolveCallable(identifier, config);
+  }
+}
+
+function getCursorTooltips(state: EditorState, config: ExpressionLanguageConfig): readonly Tooltip[] {
+  // @ts-ignore
+  return state.selection.ranges
+    .filter(range => range.empty)
+    .map(range => {
+      const tree = syntaxTree(state);
+      const node = tree.resolveInner(range.from, 0);
+      const args = resolveArguments(node);
+      if (!args || !args.prevSibling) {
+        return null;
+      }
+
+      const fn = resolveFunctionDefinition(args.prevSibling, state, config);
+      if (!fn) {
+        return null;
+      }
+
+      const n = args.childAfter(range.from - 1);
+      const argName = fn.args?.[n ? getNodeOrdinal(n) : 0];
+      if (n && n.from !== range.from || !argName) {
+        return null;
+      }
+
+      return {
+        pos: range.head,
+        above: true,
+        strictSide: false,
+        arrow: true,
+        create: () => {
+          let dom = document.createElement("div");
+          dom.className = "cm-tooltip-cursor";
+          dom.textContent = `${argName}`;
+          return {dom};
+        },
+      };
+    }).filter(x => x);
+}
+
+const cursorTooltipField = (config: ExpressionLanguageConfig) => StateField.define<readonly Tooltip[]>({
+  create: (state) => getCursorTooltips(state, config),
+
+  update(tooltips, tr) {
+    if (!tr.docChanged && !tr.selection) {
+      return tooltips;
+    }
+
+    return getCursorTooltips(tr.state, config);
+  },
+
+  provide: f => showTooltip.computeN([f], state => state.field(f))
+});
 
 export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig) => (state: EditorState) => {
   let diagnostics: Diagnostic[] = [];
@@ -80,6 +184,23 @@ export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig)
         }
 
         return;
+      case 'Arguments':
+        const args = resolveFunctionDefinition(node.node.prevSibling, state, config)?.args;
+        if (!args) {
+          return;
+        }
+
+        let i = 0;
+        let n = node.node.firstChild;
+        while (n) {
+          if (++i > args.length) {
+            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `Unexpected argument` });
+          }
+
+          n = n.nextSibling;
+        }
+
+        break;
       case 'Property':
       case 'Method':
         const leftArgument = node.node.parent?.firstChild?.node;
@@ -241,6 +362,8 @@ function resolveTypes(state: EditorState, node: SyntaxNode|undefined, config: Ex
       // @ts-ignore
       resolveIdentifier(node.lastChild?.name, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
     });
+  } else if (node.name === 'Application' && node.firstChild) {
+    resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
   }
 
   if (types.size === 0) {
@@ -259,8 +382,8 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
   const types = resolveTypes(state, tree.parent.firstChild.node, config, false);
   if (!types?.size) {
     return null;
-
   }
+
   let options = [];
   for (const type of types) {
     const typeDeclaration = config.types?.[type];
@@ -336,5 +459,6 @@ export function expressionlanguage(config: ExpressionLanguageConfig = {}, extens
     expressionLanguageLinter(config),
     keywordTooltip(config),
     ...extensions,
+    [cursorTooltipField(config), cursorTooltipBaseTheme],
   ]);
 }

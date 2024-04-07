@@ -78,4 +78,13 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].to, 10);
     ist(diagnostics[0].message, "Expression expected");
   });
+
+  it("complains about too many arguments", () => {
+    const diagnostics = get("smash_my_head({}, 2)");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 18);
+    ist(diagnostics[0].to, 19);
+    ist(diagnostics[0].message, "Unexpected argument");
+  });
 });
