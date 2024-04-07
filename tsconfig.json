@@ -5,7 +5,9 @@
     "module": "es2020",
     "newLine": "lf",
     "declaration": true,
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "sourceRoot": "src/"
   },
   "include": ["src/*.ts"]
 }
