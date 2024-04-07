@@ -74,14 +74,14 @@ describe("Expression language completion", () => {
     const c = get("sm‸").options.find(x => x.label === 'smh()');
     ist(!!c);
     ist("string", c.detail);
-    ist("smh()", c.apply);
+    ist("smh()", c.label);
   });
 
   it("completes functions with params", () => {
     const c = get("smash‸").options.find(x => x.label === 'smash_my_head(object)');
     ist(!!c);
     ist(undefined, c.detail);
-    ist("smash_my_head(", c.apply);
+    ist("smash_my_head(object)", c.label);
   });
 
   it("completes operator keywords after identifiers", () => {

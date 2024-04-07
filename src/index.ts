@@ -1,6 +1,7 @@
 import { parser } from "./syntax.grammar";
-import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, foldInside, delimitedIndent, syntaxTree } from "@codemirror/language";
-import { CompletionContext, CompletionResult } from "@codemirror/autocomplete";
+import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, delimitedIndent, syntaxTree } from "@codemirror/language";
+import { Completion, CompletionContext, CompletionResult, insertCompletionText } from "@codemirror/autocomplete";
+import { EditorView } from "@codemirror/view";
 import { styleTags, tags as t } from "@lezer/highlight";
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
@@ -29,7 +30,19 @@ export interface ExpressionLanguageConfig {
   htmlTooltip?: boolean,
 }
 
-const autocompleteFunction = (x: ELFunction) => ({ label: `${x.name}(${x.args?.join(',') || ''})`, apply: `${x.name}(${!x.args?.length ? ')' : ''}`, detail: x.returnType?.join('|'), info: x.info, type: "function" });
+const autocompleteFunction = (x: ELFunction) => ({
+  label: `${x.name}(${x.args?.join(',') || ''})`,
+  apply: (view: EditorView, completion: Completion, from: number, to: number) => {
+    view.dispatch(
+      {
+        ...insertCompletionText(view.state, `${x.name}()`, from, to),
+        selection: { anchor: from + x.name.length + (x.args?.length > 0 ? 1 : 2) }
+      }
+    );
+  },
+  detail: x.returnType?.join('|'),
+  info: x.info, type: "function"
+});
 const autocompleteIdentifier = (x: ELIdentifier) => ({ label: x.name, apply: x.name, info: x.info, detail: x.detail || x.type?.join('|'), type: 'variable' });
 const matchingIdentifier = (identifier: string) => (x: ELFunction | ELIdentifier) => x.name === identifier;
 
