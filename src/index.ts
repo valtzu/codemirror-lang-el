@@ -26,6 +26,7 @@ export interface ExpressionLanguageConfig {
   identifiers?: ELIdentifier[];
   functions?: ELFunction[];
   operatorKeywords?: readonly { name: string; detail?: string, info?: string }[];
+  htmlTooltip?: boolean,
 }
 
 const autocompleteFunction = (x: ELFunction) => ({ label: `${x.name}(${x.args?.join(',') || ''})`, apply: `${x.name}(${!x.args?.length ? ')' : ''}`, detail: x.returnType?.join('|'), info: x.info, type: "function" });
@@ -52,12 +53,12 @@ export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig)
     let identifier: string|undefined;
     switch (name) {
       case '⚠':
-        if (state.doc.length === 0) {
+        if (state.doc.length === 0 || from === 0) {
           // Don't show error on empty doc (even though it is an error)
           return;
         }
 
-        identifier = state.sliceDoc(node.from,  node.to);
+        identifier = state.sliceDoc(from,  to);
         if (identifier.length === 0) {
           diagnostics.push({from, to: node.node.parent?.parent?.to ?? to, severity: 'error', message: `Expression expected`});
         } else {
@@ -70,7 +71,7 @@ export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig)
       case 'Method':
         const leftArgument = node.node.parent?.firstChild?.node;
         const types = Array.from(resolveTypes(state, leftArgument, config, true));
-        identifier = state.sliceDoc(node.from,  node.to);
+        identifier = state.sliceDoc(from,  to);
 
         if (!types.find(type => resolveIdentifier(name, identifier, config.types?.[type]))) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.name} "${identifier}" not found in ${types.join('|')}` });
@@ -80,7 +81,7 @@ export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig)
 
       case 'Variable':
       case 'Function':
-        identifier = state.sliceDoc(node.from, node.node.firstChild ? node.node.firstChild.from - 1 : node.to);
+        identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
         if (!resolveIdentifier(name, identifier, config)) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} "${identifier}" not found` });
         }
@@ -133,7 +134,7 @@ export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip
     above: true,
     create(view) {
       const dom = document.createElement("div")
-      dom.textContent = info;
+      dom[config.htmlTooltip ? 'innerHTML' : 'textContent'] = info;
       dom.className = 'cm-diagnostic';
       return { dom };
     },
@@ -144,10 +145,14 @@ export const ELLanguage = LRLanguage.define({
   parser: parser.configure({
     props: [
       indentNodeProp.add({
-        Application: delimitedIndent({closing: ")", align: false})
+        Application: delimitedIndent({ closing: ")", align: false }),
+        Arguments: delimitedIndent({ closing: ")", align: false }),
+        Object: delimitedIndent({ closing: "}", align: false }),
       }),
       foldNodeProp.add({
-        Application: foldInside
+        Application: ({ from, to }) => ({ from: from + 1, to: to - 1 }),
+        Arguments: ({ from, to }) => ({ from: from + 1, to: to - 1 }),
+        Object: ({ from, to }) => ({ from: from + 1, to: to - 1 }),
       }),
       styleTags({
         Property: t.propertyName,
