@@ -149,4 +149,12 @@ describe("Expression language completion", () => {
     ist("property22", c[1].label);
     ist("firstMethod()", c[2].label);
   });
+
+  it("does not complete right after numbers", () => {
+    ist(null, get("123‸"));
+  });
+
+  it("does not complete right after operator keywords", () => {
+    ist(null, get("1 and‸"));
+  });
 });

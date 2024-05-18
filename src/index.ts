@@ -404,7 +404,8 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
 function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, context: CompletionContext): CompletionResult | null {
   const { state, pos, explicit } = context;
   const tree = syntaxTree(state);
-  const prevNode = tree.resolveInner(pos, state.sliceDoc(pos - 1, pos) === ')' ? 0 : -1);
+  const lastChar = state.sliceDoc(pos - 1, pos);
+  const prevNode = tree.resolveInner(pos, lastChar === ')' ? 0 : -1);
 
   const isIdentifier = (node: SyntaxNode|undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
   const isMember = (node: SyntaxNode|undefined) => ['Property', 'Method'].includes(node?.name ?? '');
@@ -427,9 +428,11 @@ function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, conte
   }
 
   if (
-    ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(prevNode.name) && prevNode.lastChild?.type.isError
-    || ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression', 'Arguments'].includes(prevNode.parent?.name ?? '') && !prevNode.type.isError
-    || ['Arguments', 'Array'].includes(prevNode.name ?? '')
+    !/[0-9]/.test(lastChar) && !['OperatorKeyword'].includes(prevNode.name ?? '') && (
+      ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(prevNode.name) && prevNode.lastChild?.type.isError
+      || ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression', 'Arguments'].includes(prevNode.parent?.name ?? '') && !prevNode.type.isError
+      || ['Arguments', 'Array'].includes(prevNode.name ?? '')
+    )
   ) {
     return completeIdentifier(state, config, prevNode, isIdentifier(prevNode) ? prevNode.from : pos, pos);
   }
