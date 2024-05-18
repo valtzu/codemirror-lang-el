@@ -86,7 +86,7 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   const isIdentifier = (node: SyntaxNode | undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
   const isMember = (node: SyntaxNode | undefined) => ['Property', 'Method'].includes(node?.name ?? '');
 
-  if (prevNode.name == 'String') {
+  if (prevNode.name == 'String' || prevNode.name == 'BlockComment') {
     return null;
   }
 

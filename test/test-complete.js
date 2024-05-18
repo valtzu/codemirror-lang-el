@@ -157,4 +157,8 @@ describe("Expression language completion", () => {
   it("does not complete right after operator keywords", () => {
     ist(null, get("1 and‸"));
   });
+
+  it("no completion inside comment", () => {
+    ist(null, get("1 /* o‸ */"));
+  });
 });

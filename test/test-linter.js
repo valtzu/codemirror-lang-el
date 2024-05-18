@@ -93,4 +93,10 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].to, 19);
     ist(diagnostics[0].message, "Unexpected argument");
   });
+
+  it("accepts comments", () => {
+    const diagnostics = get("1 /* comment */ + 2");
+
+    ist(diagnostics.length, 0);
+  });
 });
