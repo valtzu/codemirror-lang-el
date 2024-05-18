@@ -22,7 +22,7 @@ const config = {
     {name: "obj", type: ["custom44"]}
   ],
   functions: [
-    {name: "smh", returnType: ["string"]},
+    {name: "smh", args: [], returnType: ["string"]},
     {name: "smash_my_head", args: ["object"]},
     {name: "getObject", returnType: ["custom44"]},
   ],
@@ -92,6 +92,12 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].from, 18);
     ist(diagnostics[0].to, 19);
     ist(diagnostics[0].message, "Unexpected argument");
+  });
+
+  it("comments ignored in arguments", () => {
+    const diagnostics = get("smh(/* comment */)");
+
+    ist(diagnostics.length, 0);
   });
 
   it("accepts comments", () => {
