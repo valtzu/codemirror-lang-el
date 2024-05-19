@@ -92,7 +92,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
         above: true,
         create(view) {
           const dom = document.createElement("div")
-          dom[config.htmlTooltip ? 'innerHTML' : 'textContent'] = info;
+          dom[config.htmlTooltip !== false ? 'innerHTML' : 'textContent'] = info;
           dom.className = 'cm-diagnostic';
           return { dom };
         },
@@ -132,7 +132,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
     above: true,
     create(view) {
       const dom = document.createElement("div")
-      dom[config.htmlTooltip ? 'innerHTML' : 'textContent'] = info;
+      dom[config.htmlTooltip !== false ? 'innerHTML' : 'textContent'] = info;
       dom.className = 'cm-diagnostic';
       return { dom };
     },
