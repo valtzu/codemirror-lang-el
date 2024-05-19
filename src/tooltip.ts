@@ -2,7 +2,7 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState, StateField } from "@codemirror/state";
 import { EditorView, hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
-import { resolveFunctionDefinition, resolveTypes } from "./utils";
+import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveTypes } from "./utils";
 import { ExpressionLanguageConfig } from "./types";
 
 function getNodeOrdinal(node: SyntaxNode) {
@@ -24,7 +24,9 @@ function resolveArguments(node: SyntaxNode) {
   return c;
 }
 
-function getCursorTooltips(state: EditorState, config: ExpressionLanguageConfig): readonly Tooltip[] {
+function getCursorTooltips(state: EditorState): readonly Tooltip[] {
+  const config = getExpressionLanguageConfig(state);
+
   // @ts-ignore
   return state.selection.ranges
     .filter(range => range.empty)
@@ -62,21 +64,22 @@ function getCursorTooltips(state: EditorState, config: ExpressionLanguageConfig)
     }).filter(x => x);
 }
 
-export const cursorTooltipField = (config: ExpressionLanguageConfig) => StateField.define<readonly Tooltip[]>({
-  create: (state) => getCursorTooltips(state, config),
+export const cursorTooltipField = StateField.define<readonly Tooltip[]>({
+  create: (state) => getCursorTooltips(state),
 
   update(tooltips, tr) {
     if (!tr.docChanged && !tr.selection) {
       return tooltips;
     }
 
-    return getCursorTooltips(tr.state, config);
+    return getCursorTooltips(tr.state);
   },
 
   provide: f => showTooltip.computeN([f], state => state.field(f))
 });
 
-export const keywordTooltip = (config: ExpressionLanguageConfig) => hoverTooltip((view, pos, side) => {
+export const keywordTooltip = hoverTooltip((view, pos, side) => {
+  const config = getExpressionLanguageConfig(view.state);
   const tree = syntaxTree(view.state).resolveInner(pos, side);
 
   if (!['Function', 'Variable', 'Method', 'Property'].includes(tree.name)) {

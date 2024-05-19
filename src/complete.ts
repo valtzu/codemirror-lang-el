@@ -3,7 +3,7 @@ import {Completion, CompletionContext, CompletionResult, insertCompletionText} f
 import {ELFunction, ELIdentifier, ExpressionLanguageConfig} from "./types";
 import {EditorState} from "@codemirror/state";
 import {SyntaxNode} from "@lezer/common";
-import {resolveTypes} from "./utils";
+import { getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
 import {syntaxTree} from "@codemirror/language";
 
 const autocompleteFunction = (x: ELFunction) => ({
@@ -25,8 +25,8 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
   return {
     from,
     to,
-    options: config.operatorKeywords?.map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
-    validFor: (text: string) => config.operatorKeywords?.some(({ name }) => explicit || name.includes(text)) ?? false,
+    options: keywords.map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
+    validFor: (text: string) => keywords.some(({ name }) => explicit || name.includes(text)) ?? false,
   };
 }
 
@@ -69,11 +69,12 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
   };
 }
 
-function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, context: CompletionContext): CompletionResult | null {
+export function expressionLanguageCompletion(context: CompletionContext): CompletionResult | null {
   const { state, pos, explicit } = context;
   const tree = syntaxTree(state);
   const lastChar = state.sliceDoc(pos - 1, pos);
   const prevNode = tree.resolveInner(pos, lastChar === ')' ? 0 : -1);
+  const config = getExpressionLanguageConfig(state);
 
   const isIdentifier = (node: SyntaxNode|undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
   const isMember = (node: SyntaxNode|undefined) => ['Property', 'Method'].includes(node?.name ?? '');
@@ -106,20 +107,4 @@ function expressionLanguageCompletionFor(config: ExpressionLanguageConfig, conte
   }
 
   return null;
-}
-
-export function expressionLanguageCompletionSourceWith(config: ExpressionLanguageConfig) {
-  config.operatorKeywords ??= [
-    { name: 'starts with' },
-    { name: 'ends with' },
-    { name: 'contains' },
-    { name: 'matches' },
-    { name: 'not in' },
-    { name: 'in' },
-    { name: 'not' },
-    { name: 'or' },
-    { name: 'and' },
-  ];
-
-  return (context: CompletionContext) => expressionLanguageCompletionFor(config, context);
 }

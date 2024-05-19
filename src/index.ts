@@ -3,7 +3,7 @@ import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, delimitedInd
 import { styleTags, tags as t } from "@lezer/highlight";
 import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
 import { expressionLanguageLinter } from "./linter";
-import { expressionLanguageCompletionSourceWith } from "./complete";
+import { expressionLanguageCompletion } from "./complete";
 import { cursorTooltipBaseTheme, cursorTooltipField, keywordTooltip } from "./tooltip";
 
 export { ELFunction, ELIdentifier, ExpressionLanguageConfig };
@@ -47,10 +47,14 @@ export const ELLanguage = LRLanguage.define({
 
 export function expressionlanguage(config: ExpressionLanguageConfig = {}, extensions: Array<any> = []) {
   return new LanguageSupport(ELLanguage, [
-    ELLanguage.data.of({ autocomplete: expressionLanguageCompletionSourceWith(config) }),
-    expressionLanguageLinter(config),
-    keywordTooltip(config),
+    ELLanguage.data.of({
+      autocomplete: expressionLanguageCompletion,
+      expressionLanguageConfig: config,
+    }),
+    expressionLanguageLinter,
+    keywordTooltip,
+    cursorTooltipField,
+    cursorTooltipBaseTheme,
     ...extensions,
-    [cursorTooltipField(config), cursorTooltipBaseTheme],
   ]);
 }

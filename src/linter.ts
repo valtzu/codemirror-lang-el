@@ -2,12 +2,13 @@ import { ExpressionLanguageConfig } from "./types";
 import { EditorState } from "@codemirror/state";
 import { Diagnostic, linter} from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
-import {resolveFunctionDefinition, resolveIdentifier, resolveTypes} from "./utils";
+import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
 
 /**
  * @internal
  */
-export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig) => (state: EditorState) => {
+export const expressionLanguageLinterSource = (state: EditorState) => {
+  const config = getExpressionLanguageConfig(state);
   let diagnostics: Diagnostic[] = [];
 
   syntaxTree(state).cursor().iterate(node => {
@@ -77,4 +78,4 @@ export const expressionLanguageLinterSource = (config: ExpressionLanguageConfig)
   return diagnostics;
 };
 
-export const expressionLanguageLinter = (config: ExpressionLanguageConfig) => linter(view => expressionLanguageLinterSource(config)(view.state));
+export const expressionLanguageLinter = linter(view => expressionLanguageLinterSource(view.state));

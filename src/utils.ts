@@ -1,6 +1,6 @@
 import {SyntaxNode} from "@lezer/common";
 import {EditorState} from "@codemirror/state";
-import {ELFunction, ELIdentifier, ExpressionLanguageConfig} from "./types";
+import { ELFunction, ELIdentifier, ELKeyword, ExpressionLanguageConfig } from "./types";
 
 export function resolveFunctionDefinition(node: SyntaxNode|null, state: EditorState, config: ExpressionLanguageConfig) {
   if (!node) {
@@ -72,3 +72,20 @@ export function resolveTypes(state: EditorState, node: SyntaxNode|undefined, con
 
   return types;
 }
+
+export function getExpressionLanguageConfig(state: EditorState): ExpressionLanguageConfig
+{
+  return state.languageDataAt<ExpressionLanguageConfig>('expressionLanguageConfig', 0)[0];
+}
+
+export const keywords: ELKeyword[] = [
+  { name: 'starts with', info: 'Check if a string starts with a specific string' },
+  { name: 'ends with', info: 'Check if a string ends with a specific string' },
+  { name: 'contains', info: 'Check if a string is not included in another string' },
+  { name: 'matches', info: 'Check if a string matches a regex pattern' },
+  { name: 'not in', info: 'Check if a value is not included in an array' },
+  { name: 'in', info: 'Check if a value is included in an array' },
+  { name: 'not' },
+  { name: 'or' },
+  { name: 'and' },
+];

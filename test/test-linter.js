@@ -1,7 +1,7 @@
 import {EditorState} from "@codemirror/state";
 import ist from "ist"
 import {syntaxTree} from "@codemirror/language";
-import {expressionlanguage} from "../dist/index.js";
+import {expressionlanguage, ELLanguage} from "../dist/index.js";
 import {expressionLanguageLinterSource} from "../dist/linter.js";
 
 const config = {
@@ -29,10 +29,15 @@ const config = {
 };
 
 function get(doc) {
-  const elLinter = expressionLanguageLinterSource(config);
   const state = EditorState.create({
     doc,
-    extensions: [expressionlanguage(config)],
+    selection: { anchor: 0 },
+    extensions: [
+      ELLanguage.data.of({
+        expressionLanguageConfig: config,
+      }),
+      expressionlanguage(config)
+    ],
   });
 
   if (process.env.DEBUG) {
@@ -40,7 +45,7 @@ function get(doc) {
     process.stdout.write('\n');
   }
 
-  return elLinter(state);
+  return expressionLanguageLinterSource(state);
 }
 
 describe("Expression language linting", () => {

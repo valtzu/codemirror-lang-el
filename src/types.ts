@@ -28,6 +28,11 @@ export interface ExpressionLanguageConfig {
   types?: {[key: string]: ELType};
   identifiers?: ELIdentifier[];
   functions?: ELFunction[];
-  operatorKeywords?: readonly { name: string; detail?: string, info?: string }[];
   htmlTooltip?: boolean,
+}
+
+export interface ELKeyword {
+  name: string;
+  detail?: string;
+  info?: string;
 }
