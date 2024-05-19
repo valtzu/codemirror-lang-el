@@ -2,7 +2,7 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState, StateField } from "@codemirror/state";
 import { EditorView, hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
-import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveTypes } from "./utils";
+import { getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
 import { ExpressionLanguageConfig } from "./types";
 
 function getNodeOrdinal(node: SyntaxNode) {
@@ -80,7 +80,25 @@ export const cursorTooltipField = StateField.define<readonly Tooltip[]>({
 
 export const keywordTooltip = hoverTooltip((view, pos, side) => {
   const config = getExpressionLanguageConfig(view.state);
-  const tree = syntaxTree(view.state).resolveInner(pos, side);
+  const tree: SyntaxNode = syntaxTree(view.state).resolveInner(pos, side);
+
+  if (tree.name === 'OperatorKeyword') {
+    const name = view.state.sliceDoc(tree.from, tree.to);
+    const info = keywords.find(x => x.name === name)?.info;
+    if (info) {
+      return {
+        pos: tree.from,
+        end: tree.to,
+        above: true,
+        create(view) {
+          const dom = document.createElement("div")
+          dom[config.htmlTooltip ? 'innerHTML' : 'textContent'] = info;
+          dom.className = 'cm-diagnostic';
+          return { dom };
+        },
+      };
+    }
+  }
 
   if (!['Function', 'Variable', 'Method', 'Property'].includes(tree.name)) {
     return null;
