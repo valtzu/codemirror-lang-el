@@ -1,7 +1,8 @@
 import {EditorState} from "@codemirror/state";
-import {expressionlanguage, expressionLanguageLinterSource} from "../dist/index.js";
 import ist from "ist"
 import {syntaxTree} from "@codemirror/language";
+import {expressionlanguage} from "../dist/index.js";
+import {expressionLanguageLinterSource} from "../dist/linter.js";
 
 const config = {
   types: {
