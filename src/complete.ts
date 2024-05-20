@@ -3,10 +3,10 @@ import {Completion, CompletionContext, CompletionResult, insertCompletionText} f
 import {ELFunction, ELIdentifier, ExpressionLanguageConfig} from "./types";
 import {EditorState} from "@codemirror/state";
 import {SyntaxNode} from "@lezer/common";
-import { getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
+import { createInfoElement, getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
 import {syntaxTree} from "@codemirror/language";
 
-const autocompleteFunction = (x: ELFunction) => ({
+const autocompleteFunction = (x: ELFunction): Completion => ({
   label: `${x.name}(${x.args?.join(',') || ''})`,
   apply: (view: EditorView, completion: Completion, from: number, to: number) => {
     view.dispatch(
@@ -17,9 +17,16 @@ const autocompleteFunction = (x: ELFunction) => ({
     );
   },
   detail: x.returnType?.join('|'),
-  info: x.info, type: "function"
+  info: () => createInfoElement(x.info ?? ''),
+  type: "function",
 });
-const autocompleteIdentifier = (x: ELIdentifier) => ({ label: x.name, apply: x.name, info: x.info, detail: x.detail || x.type?.join('|'), type: 'variable' });
+const autocompleteIdentifier = (x: ELIdentifier): Completion => ({
+  label: x.name,
+  apply: x.name,
+  info: () => createInfoElement(x.info ?? ''),
+  detail: x.detail || x.type?.join('|'),
+  type: 'variable',
+});
 
 function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult {
   return {

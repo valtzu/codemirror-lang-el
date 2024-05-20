@@ -2,6 +2,13 @@ import {SyntaxNode} from "@lezer/common";
 import {EditorState} from "@codemirror/state";
 import { ELFunction, ELIdentifier, ELKeyword, ExpressionLanguageConfig } from "./types";
 
+export const createInfoElement = (html: string) => {
+  const dom = document.createElement("div")
+  dom.innerHTML = html;
+  dom.className = 'cm-diagnostic';
+  return dom;
+};
+
 export function resolveFunctionDefinition(node: SyntaxNode|null, state: EditorState, config: ExpressionLanguageConfig) {
   if (!node) {
     return undefined;

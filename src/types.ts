@@ -28,7 +28,6 @@ export interface ExpressionLanguageConfig {
   types?: {[key: string]: ELType};
   identifiers?: ELIdentifier[];
   functions?: ELFunction[];
-  htmlTooltip?: boolean,
 }
 
 export interface ELKeyword {

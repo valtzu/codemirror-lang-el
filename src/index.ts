@@ -5,6 +5,7 @@ import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
 import { expressionLanguageLinter } from "./linter";
 import { expressionLanguageCompletion } from "./complete";
 import { cursorTooltipBaseTheme, cursorTooltipField, keywordTooltip } from "./tooltip";
+import { Extension } from "@codemirror/state";
 
 export { ELFunction, ELIdentifier, ExpressionLanguageConfig };
 
@@ -45,7 +46,7 @@ export const ELLanguage = LRLanguage.define({
   languageData: {},
 });
 
-export function expressionlanguage(config: ExpressionLanguageConfig = {}, extensions: Array<any> = []) {
+export function expressionlanguage(config: ExpressionLanguageConfig = {}, extensions: Extension[] = []) {
   return new LanguageSupport(ELLanguage, [
     ELLanguage.data.of({
       autocomplete: expressionLanguageCompletion,

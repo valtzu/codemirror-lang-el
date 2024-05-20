@@ -2,7 +2,7 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState, StateField } from "@codemirror/state";
 import { EditorView, hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
-import { getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
+import { createInfoElement, getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
 import { ExpressionLanguageConfig } from "./types";
 
 function getNodeOrdinal(node: SyntaxNode) {
@@ -90,12 +90,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
         pos: tree.from,
         end: tree.to,
         above: true,
-        create(view) {
-          const dom = document.createElement("div")
-          dom[config.htmlTooltip !== false ? 'innerHTML' : 'textContent'] = info;
-          dom.className = 'cm-diagnostic';
-          return { dom };
-        },
+        create: () => ({ dom: createInfoElement(info) }),
       };
     }
   }
@@ -130,12 +125,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
     pos: tree.from,
     end: tree.to,
     above: true,
-    create(view) {
-      const dom = document.createElement("div")
-      dom[config.htmlTooltip !== false ? 'innerHTML' : 'textContent'] = info;
-      dom.className = 'cm-diagnostic';
-      return { dom };
-    },
+    create: () => ({ dom: createInfoElement(info) }),
   };
 });
 
