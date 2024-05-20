@@ -22,7 +22,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: dist/*
+          file: dist/index.*
           tag: ${{ github.ref_name }}
           overwrite: true
           file_glob: true
