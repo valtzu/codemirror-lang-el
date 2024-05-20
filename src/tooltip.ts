@@ -9,13 +9,13 @@ function getNodeOrdinal(node: SyntaxNode) {
   let ordinal = -1;
 
   // noinspection StatementWithEmptyBodyJS
-  for (let c: SyntaxNode|null = node; c; c = c.prevSibling, ordinal++);
+  for (let c: SyntaxNode | null = node; c; c = c.prevSibling, ordinal++) ;
 
   return ordinal;
 }
 
 function resolveArguments(node: SyntaxNode) {
-  let c: SyntaxNode|null = node;
+  let c: SyntaxNode | null = node;
 
   while (c && c.name !== 'Arguments') {
     c = c.parent;
@@ -58,7 +58,7 @@ function getCursorTooltips(state: EditorState): readonly Tooltip[] {
           let dom = document.createElement("div");
           dom.className = "cm-tooltip-cursor";
           dom.textContent = `${argName}`;
-          return {dom};
+          return { dom };
         },
       };
     }).filter(x => x);

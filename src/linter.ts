@@ -1,6 +1,6 @@
 import { ExpressionLanguageConfig } from "./types";
 import { EditorState } from "@codemirror/state";
-import { Diagnostic, linter} from "@codemirror/lint";
+import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
 import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
 
@@ -12,7 +12,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
   let diagnostics: Diagnostic[] = [];
 
   syntaxTree(state).cursor().iterate(node => {
-    const {from, to, name} = node;
+    const { from, to, name } = node;
 
     let identifier: string | undefined;
     switch (name) {
@@ -24,10 +24,10 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
 
         identifier = state.sliceDoc(from, to);
         if (identifier.length === 0) {
-          diagnostics.push({from, to: node.node.parent?.parent?.to ?? to, severity: 'error', message: `Expression expected`});
+          diagnostics.push({ from, to: node.node.parent?.parent?.to ?? to, severity: 'error', message: `Expression expected` });
         } else {
           const type = /^[a-zA-Z_]+[a-zA-Z_0-9]*$/.test(identifier) ? 'identifier' : 'operator';
-          diagnostics.push({from, to, severity: 'error', message: `Unexpected ${type} '${identifier}'`});
+          diagnostics.push({ from, to, severity: 'error', message: `Unexpected ${type} '${identifier}'` });
         }
 
         return;
@@ -41,7 +41,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         let n = node.node.firstChild;
         while (n) {
           if (++i > args.length) {
-            diagnostics.push({from: n.from, to: n.to, severity: 'error', message: `Unexpected argument`});
+            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `Unexpected argument` });
           }
 
           n = n.nextSibling;
@@ -55,7 +55,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         identifier = state.sliceDoc(from, to);
 
         if (!types.find(type => resolveIdentifier(name, identifier, config.types?.[type]))) {
-          diagnostics.push({from, to, severity: 'error', message: `${node.name} "${identifier}" not found in ${types.join('|')}`});
+          diagnostics.push({ from, to, severity: 'error', message: `${node.name} "${identifier}" not found in ${types.join('|')}` });
         }
 
         break;
@@ -64,14 +64,14 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
       case 'Function':
         identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
         if (!resolveIdentifier(name, identifier, config)) {
-          diagnostics.push({from, to, severity: 'error', message: `${node.node.name} "${identifier}" not found`});
+          diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} "${identifier}" not found` });
         }
 
         break;
     }
 
     if (identifier && node.node.parent?.type.isError) {
-      diagnostics.push({from, to, severity: 'error', message: `Unexpected identifier "${identifier}"`});
+      diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier "${identifier}"` });
     }
   });
 

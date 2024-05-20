@@ -1,5 +1,5 @@
-import {SyntaxNode} from "@lezer/common";
-import {EditorState} from "@codemirror/state";
+import { SyntaxNode } from "@lezer/common";
+import { EditorState } from "@codemirror/state";
 import { ELFunction, ELIdentifier, ELKeyword, ExpressionLanguageConfig } from "./types";
 
 export const createInfoElement = (html: string) => {
@@ -9,12 +9,12 @@ export const createInfoElement = (html: string) => {
   return dom;
 };
 
-export function resolveFunctionDefinition(node: SyntaxNode|null, state: EditorState, config: ExpressionLanguageConfig) {
+export function resolveFunctionDefinition(node: SyntaxNode | null, state: EditorState, config: ExpressionLanguageConfig) {
   if (!node) {
     return undefined;
   }
 
-  let identifier: string|undefined;
+  let identifier: string | undefined;
   if (node.name === 'ObjectAccess' && node.lastChild) {
     const leftArgument = node.firstChild?.node;
     const types = Array.from(resolveTypes(state, leftArgument, config, true));
@@ -28,9 +28,15 @@ export function resolveFunctionDefinition(node: SyntaxNode|null, state: EditorSt
   }
 }
 
-const resolveCallable = (identifier?: string, config?: { identifiers?: ELIdentifier[], functions?: ELFunction[] }) => config?.functions?.find(x => x.name === identifier);
+const resolveCallable = (identifier?: string, config?: {
+  identifiers?: ELIdentifier[],
+  functions?: ELFunction[]
+}) => config?.functions?.find(x => x.name === identifier);
 
-export const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' | 'Variable', identifier?: string, config?: { identifiers?: ELIdentifier[], functions?: ELFunction[] }): ELIdentifier|ELFunction|undefined => {
+export const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' | 'Variable', identifier?: string, config?: {
+  identifiers?: ELIdentifier[],
+  functions?: ELFunction[]
+}): ELIdentifier | ELFunction | undefined => {
   switch (nodeName) {
     case 'Method':
     case 'Function':
@@ -41,7 +47,7 @@ export const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' |
   }
 };
 
-export function resolveTypes(state: EditorState, node: SyntaxNode|undefined, config: ExpressionLanguageConfig, matchExact: boolean): Set<string>  {
+export function resolveTypes(state: EditorState, node: SyntaxNode | undefined, config: ExpressionLanguageConfig, matchExact: boolean): Set<string> {
   let types: Set<string> = new Set<string>();
   if (!node) {
     return types;
@@ -80,8 +86,7 @@ export function resolveTypes(state: EditorState, node: SyntaxNode|undefined, con
   return types;
 }
 
-export function getExpressionLanguageConfig(state: EditorState): ExpressionLanguageConfig
-{
+export function getExpressionLanguageConfig(state: EditorState): ExpressionLanguageConfig {
   return state.languageDataAt<ExpressionLanguageConfig>('expressionLanguageConfig', 0)[0];
 }
 

@@ -25,7 +25,7 @@ export interface ELType {
 }
 
 export interface ExpressionLanguageConfig {
-  types?: {[key: string]: ELType};
+  types?: { [key: string]: ELType };
   identifiers?: ELIdentifier[];
   functions?: ELFunction[];
 }

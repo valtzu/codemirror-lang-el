@@ -1,10 +1,10 @@
 import { EditorView } from "@codemirror/view";
-import {Completion, CompletionContext, CompletionResult, insertCompletionText} from "@codemirror/autocomplete";
-import {ELFunction, ELIdentifier, ExpressionLanguageConfig} from "./types";
-import {EditorState} from "@codemirror/state";
-import {SyntaxNode} from "@lezer/common";
+import { Completion, CompletionContext, CompletionResult, insertCompletionText } from "@codemirror/autocomplete";
+import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
+import { EditorState } from "@codemirror/state";
+import { SyntaxNode } from "@lezer/common";
 import { createInfoElement, getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
-import {syntaxTree} from "@codemirror/language";
+import { syntaxTree } from "@codemirror/language";
 
 const autocompleteFunction = (x: ELFunction): Completion => ({
   label: `${x.name}(${x.args?.join(',') || ''})`,
@@ -83,8 +83,8 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   const prevNode = tree.resolveInner(pos, lastChar === ')' ? 0 : -1);
   const config = getExpressionLanguageConfig(state);
 
-  const isIdentifier = (node: SyntaxNode|undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
-  const isMember = (node: SyntaxNode|undefined) => ['Property', 'Method'].includes(node?.name ?? '');
+  const isIdentifier = (node: SyntaxNode | undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
+  const isMember = (node: SyntaxNode | undefined) => ['Property', 'Method'].includes(node?.name ?? '');
 
   if (prevNode.name == 'String') {
     return null;
