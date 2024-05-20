@@ -1,14 +1,50 @@
-### Symfony Expression Language support for CodeMirror
+## Symfony Expression Language support for CodeMirror 6
 
-#### Features
+> :warning: **This is unstable**: Expect breaking changes until v1 is out.
 
-1. Autocompletion for variables, functions, operator keywords – with (some) type resolving
-2. Hover tooltip
-3. Linting
+### Features
 
-#### Example
+#### Linting
 
-![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/c139cc50-077e-4f58-87e4-7ce404a445f4)
+![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/dd221b7d-7cc6-494f-9823-dae8a55eca03)
+
+#### Autocompletion
+
+![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/a5a7bfdc-2869-4cbb-98f6-0abe361d55ba)
+
+#### Hover tooltip
+
+![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/3cfd7a49-4503-491c-972d-26d209ea26f3)
+
+#### Function argument hints
+
+![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/129eb510-a2aa-479e-b1de-dd0232b33299)
+
+---
+
+### Installation
+
+#### Symfony AssetMapper
+
+```
+bin/console importmap:require @valtzu/codemirror-lang-el
+```
+
+#### npm
+
+```
+npm install @valtzu/codemirror-lang-el
+```
+
+#### Yarn
+
+```
+yarn add @valtzu/codemirror-lang-el
+```
+
+---
+
+### Example
 
 [Live demo](https://jsfiddle.net/9xhezam4/)
 
@@ -84,3 +120,7 @@
     }
 </style>
 ```
+
+### Contributing
+
+Contributions are accepted.
