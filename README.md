@@ -46,7 +46,7 @@ yarn add @valtzu/codemirror-lang-el
 
 ### Example
 
-[Live demo](https://jsfiddle.net/9xhezam4/)
+[Live demo](https://jsfiddle.net/turse2xq/)
 
 ```html
 <div id="editor"></div>
@@ -77,7 +77,6 @@ yarn add @valtzu/codemirror-lang-el
     import { keymap } from "@codemirror/view";
     import { expressionlanguage } from "@valtzu/codemirror-lang-el";
     import { defaultKeymap } from "@codemirror/commands";
-
 
     let editor = new EditorView({
         extensions: [

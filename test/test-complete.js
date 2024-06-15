@@ -158,6 +158,30 @@ describe("Expression language completion", () => {
     ist(null, get("1 and‸"));
   });
 
+  it("does complete after ternary expression", () => {
+    let c = get("(foobar ? obj : false).‸")?.options;
+    ist(c?.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
+
+  it("does complete after ternary expression shortcut", () => {
+    let c = get("(foobar ? obj).‸")?.options;
+    ist(c?.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
+
+  it("does complete after ternary expression shortcut 2", () => {
+    let c = get("(foobar ?: obj).‸")?.options;
+    ist(c?.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
+
   it("no completion inside comment", () => {
     ist(null, get("1 /* o‸ */"));
   });

@@ -3,7 +3,6 @@ import { EditorState, StateField } from "@codemirror/state";
 import { EditorView, hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { createInfoElement, getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
-import { ExpressionLanguageConfig } from "./types";
 
 function getNodeOrdinal(node: SyntaxNode) {
   let ordinal = -1;

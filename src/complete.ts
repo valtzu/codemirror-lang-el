@@ -90,7 +90,7 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
     return null;
   }
 
-  if (prevNode.parent?.name == 'ObjectAccess' && ['ObjectAccess', 'ArrayAccess', 'Variable', 'Call'].includes(prevNode.parent.firstChild?.name || '')) {
+  if (prevNode.parent?.name == 'ObjectAccess' && ['ObjectAccess', 'ArrayAccess', 'Variable', 'Call', 'Application'].includes(prevNode.parent.firstChild?.name || '')) {
     return completeMember(state, config, prevNode, isIdentifier(prevNode) || isMember(prevNode) ? prevNode.from : pos, pos, explicit);
   }
 
