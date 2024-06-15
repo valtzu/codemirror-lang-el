@@ -46,6 +46,22 @@ condition ? "yes" : "no"
 
 Expression(TernaryExpression(Variable, String, String))
 
+# Ternary expression shortcut
+
+condition ? "yes"
+
+==>
+
+Expression(BinaryExpression(Variable, Operator, String))
+
+# Ternary expression shortcut 2
+
+condition ?: "yes"
+
+==>
+
+Expression(BinaryExpression(Variable, Operator, String))
+
 # Strings
 
 ["hello", "one\"\\two", 't"h"ree']

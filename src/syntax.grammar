@@ -70,7 +70,7 @@ Call {
 }
 
 TernaryExpression {
-  expression !right '?' expression ':' expression
+  expression !right o<'?'> expression ':' expression
 }
 
 @tokens {
@@ -80,15 +80,15 @@ TernaryExpression {
 
   space { $[ \t\n\r]+ }
 
-  Operator { '===' | '!==' |  '||' | '&&' | '==' | '!=' | '>=' | '<=' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' | '??' | '?:' }
+  Operator { '===' | '!==' |  '||' | '&&' | '==' | '!=' | '>=' | '<=' | '..' | '**' | '!' | '|' | '^' | '&' | '<' | '>' | '+' | '-' | '~' | '*' | '/' | '%' | '??' | '?:' | '?' }
   MemberOf { '.' }
   NullSafeMemberOf { '?.' }
 
   @precedence {
     String,
+    NullSafeMemberOf,
     Operator,
     MemberOf,
-    NullSafeMemberOf,
     Number,
     word
   }
