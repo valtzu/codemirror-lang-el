@@ -1,4 +1,3 @@
-import { ExpressionLanguageConfig } from "./types";
 import { EditorState } from "@codemirror/state";
 import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
