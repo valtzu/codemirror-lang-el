@@ -77,6 +77,9 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined, c
     });
   } else if (node.name === 'Application' && node.firstChild) {
     resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
+  } else if (node.name === 'TernaryExpression' && node.firstChild && node.firstChild.nextSibling && node.firstChild.nextSibling.nextSibling) {
+    resolveTypes(state, node.firstChild.nextSibling, config, matchExact).forEach(x => types.add(x));
+    resolveTypes(state, node.firstChild.nextSibling.nextSibling, config, matchExact).forEach(x => types.add(x));
   }
 
   if (types.size === 0) {

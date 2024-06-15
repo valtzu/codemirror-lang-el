@@ -157,4 +157,12 @@ describe("Expression language completion", () => {
   it("does not complete right after operator keywords", () => {
     ist(null, get("1 and‸"));
   });
+
+  it("does complete after ternary expression", () => {
+    let c = get("(foobar ? obj : false).‸")?.options;
+    ist(c?.length, 3);
+    ist("property11", c[0].label);
+    ist("property22", c[1].label);
+    ist("firstMethod()", c[2].label);
+  });
 });
