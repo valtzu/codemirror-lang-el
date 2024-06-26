@@ -141,3 +141,19 @@ andnotfound
 ==>
 
 Expression(Variable)
+
+# Top-level comment
+
+123 /* this is a great number */
+
+==>
+
+Expression(Number, BlockComment)
+
+# Comment in arguments
+
+function(/* this is a great number */ 123)
+
+==>
+
+Expression(Call(Function, Arguments(BlockComment, Number)))

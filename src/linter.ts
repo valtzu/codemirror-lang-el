@@ -39,7 +39,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         let i = 0;
         let n = node.node.firstChild;
         while (n) {
-          if (++i > args.length) {
+          if (n.name !== 'BlockComment' && ++i > args.length) {
             diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `Unexpected argument` });
           }
 

@@ -40,6 +40,7 @@ export const ELLanguage = LRLanguage.define({
         OperatorKeyword: t.operatorKeyword,
         UnaryOperator: t.operator,
         Operator: t.operator,
+        BlockComment: t.comment,
       })
     ]
   }),

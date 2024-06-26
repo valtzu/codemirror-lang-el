@@ -181,4 +181,8 @@ describe("Expression language completion", () => {
     ist("property22", c[1].label);
     ist("firstMethod()", c[2].label);
   });
+
+  it("no completion inside comment", () => {
+    ist(null, get("1 /* o‸ */"));
+  });
 });

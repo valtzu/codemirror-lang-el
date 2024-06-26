@@ -6,7 +6,17 @@
   right @right
 }
 
-@skip { space }
+@skip { space | BlockComment }
+
+@skip {} {
+  BlockComment { "/*" (blockCommentContent | blockCommentNewline)* blockCommentEnd }
+}
+
+@local tokens {
+  blockCommentEnd { "*/" }
+  blockCommentNewline { "\n" }
+  @else blockCommentContent
+}
 
 @top Expression { expression }
 
