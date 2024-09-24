@@ -157,3 +157,11 @@ function(/* this is a great number */ 123)
 ==>
 
 Expression(Call(Function, Arguments(BlockComment, Number)))
+
+# Bitwise operators introduced in Symfony 7.2
+
+1 << 2 >> 3
+
+==>
+
+Expression(BinaryExpression(Number, Operator, BinaryExpression(Number, Operator, Number)))
