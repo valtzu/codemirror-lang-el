@@ -127,16 +127,3 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
     create: () => ({ dom: createInfoElement(info) }),
   };
 });
-
-export const cursorTooltipBaseTheme = EditorView.baseTheme({
-  ".cm-tooltip.cm-tooltip-cursor": {
-    boxShadow: 'rgba(0, 0, 0, .15) 0 1px 2px',
-    border: "1px solid rgba(127, 127, 127, .2)",
-    padding: "2px 7px",
-    borderRadius: "4px",
-    "& .cm-tooltip-arrow:before": {},
-    "& .cm-tooltip-arrow:after": {
-      borderTopColor: "transparent"
-    }
-  }
-});

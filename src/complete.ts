@@ -3,7 +3,7 @@ import { Completion, CompletionContext, CompletionResult, insertCompletionText }
 import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
 import { EditorState } from "@codemirror/state";
 import { SyntaxNode } from "@lezer/common";
-import { createInfoElement, getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
+import { getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
 import { syntaxTree } from "@codemirror/language";
 
 const autocompleteFunction = (x: ELFunction): Completion => ({
@@ -17,13 +17,13 @@ const autocompleteFunction = (x: ELFunction): Completion => ({
     );
   },
   detail: x.returnType?.join('|'),
-  info: () => createInfoElement(x.info ?? ''),
+  info: x.info,
   type: "function",
 });
 const autocompleteIdentifier = (x: ELIdentifier): Completion => ({
   label: x.name,
   apply: x.name,
-  info: () => createInfoElement(x.info ?? ''),
+  info: x.info,
   detail: x.detail || x.type?.join('|'),
   type: 'variable',
 });
@@ -32,7 +32,13 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
   return {
     from,
     to,
-    options: keywords.map(({ name, info, detail }) => ({ label: name, apply: `${name} `, info, detail, type: "keyword" })) ?? [],
+    options: keywords.map(({ name, info, detail }) => ({
+      label: name,
+      apply: `${name} `,
+      info: info,
+      detail,
+      type: "keyword"
+    })) ?? [],
     validFor: (text: string) => keywords.some(({ name }) => explicit || name.includes(text)) ?? false,
   };
 }

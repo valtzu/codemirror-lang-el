@@ -4,8 +4,9 @@ import { styleTags, tags as t } from "@lezer/highlight";
 import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
 import { expressionLanguageLinter } from "./linter";
 import { expressionLanguageCompletion } from "./complete";
-import { cursorTooltipBaseTheme, cursorTooltipField, keywordTooltip } from "./tooltip";
+import { cursorTooltipField, keywordTooltip } from "./tooltip";
 import { Extension } from "@codemirror/state";
+import { baseTheme } from "./theme";
 
 export { ELFunction, ELIdentifier, ExpressionLanguageConfig };
 
@@ -56,7 +57,7 @@ export function expressionlanguage(config: ExpressionLanguageConfig = {}, extens
     expressionLanguageLinter,
     keywordTooltip,
     cursorTooltipField,
-    cursorTooltipBaseTheme,
+    baseTheme,
     ...extensions,
   ]);
 }
