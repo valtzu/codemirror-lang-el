@@ -119,6 +119,7 @@ OperatorKeyword {
     k<'not'> |
     k<'and'> |
     k<'or'> |
+    k<'xor'> |
     k<'in'>
 }
 

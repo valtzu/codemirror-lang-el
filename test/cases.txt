@@ -165,3 +165,11 @@ Expression(Call(Function, Arguments(BlockComment, Number)))
 ==>
 
 Expression(BinaryExpression(Number, Operator, BinaryExpression(Number, Operator, Number)))
+
+# Logical xor introduced in Symfony 7.2
+
+foobar xor true
+
+==>
+
+Expression(BinaryExpression(Variable, OperatorKeyword, Boolean))

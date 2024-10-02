@@ -3,7 +3,7 @@ import {CompletionContext} from "@codemirror/autocomplete";
 import {expressionlanguage} from "../dist/index.js";
 import ist from "ist";
 
-const operatorKeywords = ['starts with', 'ends with', 'contains', 'matches', 'in', 'not', 'or', 'and'];
+const operatorKeywords = ['starts with', 'ends with', 'contains', 'matches', 'in', 'not', 'or', 'xor', 'and'];
 
 function get(doc, conf = {}) {
   let cur = doc.indexOf("‸");
