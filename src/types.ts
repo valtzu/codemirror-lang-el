@@ -35,3 +35,11 @@ export interface ELKeyword {
   detail?: string;
   info?: string;
 }
+
+export enum ELScalar {
+  Bool = 'bool',
+  Number = 'number',
+  String = 'string',
+  Null = 'null',
+  Any = 'any', // not really scalar but meh
+}

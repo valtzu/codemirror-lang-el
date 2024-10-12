@@ -1,6 +1,7 @@
 import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
-import { ELFunction, ELIdentifier, ELKeyword, ExpressionLanguageConfig } from "./types";
+import { ELFunction, ELIdentifier, ELKeyword, ELScalar, ExpressionLanguageConfig } from "./types";
+import { t } from "./props";
 
 export const createInfoElement = (html: string) => {
   const dom = document.createElement("div")
@@ -53,7 +54,10 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined, c
     return types;
   }
 
-  if (node.name === 'Call' && node.firstChild && node.lastChild) {
+  let type;
+  if (typeof (type = node.type.prop(t)) !== "undefined") {
+    types.add(type);
+  } else if (node.name === 'Call' && node.firstChild && node.lastChild) {
     resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
   } else if (node.name === 'Variable') {
     const varName = state.sliceDoc(node.from, node.to) || '';
@@ -89,17 +93,17 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined, c
       resolveTypes(state, node.firstChild.nextSibling.nextSibling, config, matchExact).forEach(x => types.add(x));
     }
     if (['||', '&&'].includes(operator) || keywords.find(x => x.name == operator)) {
-      types.add('bool');
+      types.add(ELScalar.Bool);
     }
   } else if (node.name === 'UnaryExpression' && node.firstChild) {
     const operator = state.sliceDoc(node.firstChild.from, node.firstChild.to);
     if (['not', '!'].includes(operator)) {
-      types.add('bool');
+      types.add(ELScalar.Bool);
     }
   }
 
   if (types.size === 0) {
-    types.add('any');
+    types.add(ELScalar.Any);
   }
 
   return types;

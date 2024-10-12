@@ -40,4 +40,13 @@ export default [
     ],
     plugins: [lezer(), typescript()]
   },
+  {
+    input: "src/utils.ts",
+    external: id => id !== "tslib" && !/^(\.?\/|\w:)/.test(id),
+    output: [
+      { file: "dist/utils.cjs", format: "cjs", sourcemap },
+      { dir: "./dist", format: "es", sourcemap }
+    ],
+    plugins: [lezer(), typescript()]
+  },
 ];
