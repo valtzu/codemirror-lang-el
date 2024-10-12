@@ -86,19 +86,22 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined, c
     resolveTypes(state, node.firstChild.nextSibling.nextSibling, config, matchExact).forEach(x => types.add(x));
   } else if (node.name === 'BinaryExpression' && node.firstChild?.nextSibling && node.firstChild?.nextSibling?.nextSibling) {
     const operator = state.sliceDoc(node.firstChild.nextSibling.from, node.firstChild.nextSibling.to);
-    if (operator == '?:' || operator == '??') {
-      resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
-    }
     if (operator == '?:' || operator == '??' || operator == '?') {
+      if (operator == '?:' || operator == '??') {
+        resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
+      }
       resolveTypes(state, node.firstChild.nextSibling.nextSibling, config, matchExact).forEach(x => types.add(x));
-    }
-    if (['||', '&&'].includes(operator) || keywords.find(x => x.name == operator)) {
+    } else if (['||', '&&', '==', '!=', '===', '!==', '>=', '<=', '>', '<'].includes(operator) || keywords.find(x => x.name == operator)) {
       types.add(ELScalar.Bool);
+    } else if (['**', '|', '^', '&', '<<', '>>', '+', '-', '*', '/', '%'].includes(operator)) {
+      types.add(ELScalar.Number);
     }
   } else if (node.name === 'UnaryExpression' && node.firstChild) {
     const operator = state.sliceDoc(node.firstChild.from, node.firstChild.to);
     if (['not', '!'].includes(operator)) {
       types.add(ELScalar.Bool);
+    } else if (['+', '-'].includes(operator)) {
+      types.add(ELScalar.Number);
     }
   }
 

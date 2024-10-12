@@ -49,6 +49,11 @@ describe("Type resolving", () => {
     ['obj ?? true', 'custom44|bool'],
     ['(obj ?? true)', 'custom44|bool'],
     ['true or false', 'bool'],
+    ['1 + 2', 'number'],
+    ['not 1', 'bool'],
+    ['!1', 'bool'],
+    ['+false', 'number'],
+    ['-true', 'number'],
   ].forEach(([doc, type]) =>
     it(`${doc} -> ${type}`, () => {
       const state = get(doc);
