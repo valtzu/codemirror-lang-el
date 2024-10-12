@@ -103,7 +103,7 @@ yarn add @valtzu/codemirror-lang-el
                     { name: "user", type: ["User"], info: 'This is the user' },
                 ],
                 functions: [
-                    { name: "is_granted", args: ["subject", "object"], info: 'Check if subject has permission to the object', returnType: ['bool'] },
+                    { name: "is_granted", args: [{name: "attributes", type: ["string"]}, {name: "object", type: ["object"], optional: true}], info: 'Check if subject has permission to the object', returnType: ['bool'] },
                 ],
             })
         ],
