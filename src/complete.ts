@@ -7,7 +7,7 @@ import { getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
 import { syntaxTree } from "@codemirror/language";
 
 const autocompleteFunction = (x: ELFunction): Completion => ({
-  label: `${x.name}(${x.args?.join(',') || ''})`,
+  label: `${x.name}(${x.args?.map(x => x.name)?.join(',') || ''})`,
   apply: (view: EditorView, completion: Completion, from: number, to: number) => {
     view.dispatch(
       {

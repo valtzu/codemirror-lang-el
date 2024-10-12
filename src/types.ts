@@ -13,9 +13,16 @@ export interface ELIdentifier {
  */
 export interface ELFunction {
   name: string;
-  args: string[]; // maybe these could be ELIdentifier[] ?
+  args: ELParameter[];
   info?: string;
   returnType?: string[];
+}
+
+export interface ELParameter {
+  name: string;
+  type?: string[];
+  info?: string;
+  optional?: boolean;
 }
 
 export interface ELType {

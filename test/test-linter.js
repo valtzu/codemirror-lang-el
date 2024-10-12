@@ -23,7 +23,7 @@ const config = {
   ],
   functions: [
     {name: "smh", args: [], returnType: ["string"]},
-    {name: "smash_my_head", args: ["object"]},
+    {name: "smash_my_head", args: [{name: "object"}]},
     {name: "getObject", returnType: ["custom44"]},
   ],
 };

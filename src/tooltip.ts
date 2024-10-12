@@ -43,7 +43,7 @@ function getCursorTooltips(state: EditorState): readonly Tooltip[] {
       }
 
       const n = args.childAfter(range.from - 1);
-      const argName = fn.args?.[n ? getNodeOrdinal(n) : 0];
+      const argName = fn.args?.[n ? getNodeOrdinal(n) : 0]?.name;
       if (n && n.from !== range.from || !argName) {
         return null;
       }

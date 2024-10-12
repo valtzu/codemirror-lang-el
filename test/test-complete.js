@@ -30,7 +30,7 @@ function get(doc, conf = {}) {
       ],
       functions: [
         {name: "smh", returnType: ["string"]},
-        {name: "smash_my_head", args: ["object"]},
+        {name: "smash_my_head", args: [{name: "object", type: ["custom44"]}]},
         {name: "getObject", returnType: ["custom44"]},
       ],
     })],
