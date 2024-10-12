@@ -1,10 +1,18 @@
 # Booleans
 
-[true, false]
+[true, false, TRUE, FALSE]
 
 ==>
 
-Expression(Array(Boolean, Boolean))
+Expression(Array(Boolean, Boolean, Boolean, Boolean))
+
+# Null
+
+[null, NULL]
+
+==>
+
+Expression(Array(Null, Null))
 
 # Numbers
 

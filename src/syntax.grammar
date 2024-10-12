@@ -107,8 +107,8 @@ TernaryExpression {
 o<term> { @extend<Operator, term> }
 k<term> { @specialize<word, term> }
 
-Boolean { k<'true'> | k<'false'> }
-Null { k<'null'> }
+Boolean { k<'true'> | k<'TRUE'> | k<'false'> | k<'FALSE'> }
+Null { k<'null'> | k<'NULL'> }
 
 OperatorKeyword {
     (k<'starts'> k<'with'>) |
