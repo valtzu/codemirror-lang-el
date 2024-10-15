@@ -126,6 +126,7 @@ OperatorKeyword {
 UnaryOperator {
     k<'not'> |
     o<'!'> |
+    o<'~'> |
     o<'+'> |
     o<'-'>
 }

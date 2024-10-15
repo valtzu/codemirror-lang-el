@@ -181,3 +181,19 @@ foobar xor true
 ==>
 
 Expression(BinaryExpression(Variable, OperatorKeyword, Boolean))
+
+# Bitwise not introduced in Symfony 7.2
+
+~5
+
+==>
+
+Expression(UnaryExpression(UnaryOperator, Number))
+
+# String concat operator
+
+'fuzz' ~ bizz
+
+==>
+
+Expression(BinaryExpression(String, Operator, Variable))

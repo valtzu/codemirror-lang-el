@@ -77,7 +77,7 @@ describe("Expression language linting", () => {
   });
 
   it("complains about multiple binary operators in row", () => {
-    const diagnostics = get("obj ~~ obj");
+    const diagnostics = get("obj +* obj");
 
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 5);
