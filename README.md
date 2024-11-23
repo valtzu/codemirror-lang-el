@@ -50,27 +50,6 @@ yarn add @valtzu/codemirror-lang-el
 
 ```html
 <div id="editor"></div>
-<script type="importmap">
-    {
-      "imports": {
-        "codemirror": "https://esm.sh/*codemirror@6.0.1",
-        "@codemirror/state": "https://esm.sh/*@codemirror/state@6.4.1",
-        "@codemirror/search": "https://esm.sh/*@codemirror/search@6.5.6",
-        "@codemirror/autocomplete": "https://esm.sh/*@codemirror/autocomplete@6.9.0",
-        "@codemirror/view": "https://esm.sh/*@codemirror/view@6.26.3",
-        "@codemirror/commands": "https://esm.sh/*@codemirror/commands@6.2.5",
-        "@codemirror/language": "https://esm.sh/*@codemirror/language@6.9.0",
-        "@codemirror/lint": "https://esm.sh/*@codemirror/lint@6.4.1",
-        "@lezer/lr": "https://esm.sh/*@lezer/lr@1.3.9",
-        "@lezer/highlight": "https://esm.sh/*@lezer/highlight@1.1.6",
-        "@lezer/common": "https://esm.sh/*@lezer/common@1.2.1",
-        "style-mod": "https://esm.sh/*style-mod@4.1.2",
-        "w3c-keyname": "https://esm.sh/*w3c-keyname@2.2.8",
-        "crelt": "https://esm.sh/*crelt@1.0.6",
-        "@valtzu/codemirror-lang-el": "https://esm.sh/*@valtzu/codemirror-lang-el@0.6.3"
-      }
-    }
-</script>
 <script type="module">
     import { EditorView, basicSetup } from "codemirror";
     import { acceptCompletion } from "@codemirror/autocomplete";
