@@ -46,7 +46,7 @@ list {
   (expression ("," expression)*)?
 }
 
-Object {
+Object[t="object"] {
   "{" (expression ":" expression ("," expression ":" expression)*)? "}"
 }
 
@@ -54,7 +54,7 @@ ArrayAccess {
   expression !left "[" expression "]"
 }
 
-Array {
+Array[t="array"] {
   "[" list "]"
 }
 
