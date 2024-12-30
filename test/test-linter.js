@@ -8,8 +8,8 @@ const config = {
   types: {
     "custom44": {
       identifiers: [
-        {name: "property11", type: ["mixed"]},
-        {name: "property22", type: ["mixed"]},
+        {name: "property11", type: ["any"]},
+        {name: "property22", type: ["any"]},
       ],
       functions: [
         {name: "firstMethod", args: [], returnType: ["custom44"]},
@@ -23,7 +23,8 @@ const config = {
   ],
   functions: [
     {name: "smh", args: [], returnType: ["string"]},
-    {name: "smash_my_head", args: [{name: "object"}]},
+    {name: "any_fn", args: [{name: "anything", type: ["any"]}], returnType: ["any"]},
+    {name: "smash_my_head", args: [{name: "object", type: ["object"]}]},
     {name: "getObject", returnType: ["custom44"]},
   ],
 };
@@ -92,6 +93,30 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].from, 18);
     ist(diagnostics[0].to, 19);
     ist(diagnostics[0].message, "Unexpected argument");
+  });
+
+  it("complains about wrong argument type using constant", () => {
+    const diagnostics = get("smash_my_head(5)");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 14);
+    ist(diagnostics[0].to, 15);
+    ist(diagnostics[0].message, "<code>object</code> expected, got <code>number</code>");
+  });
+
+  it("complains about wrong argument type using resolved type", () => {
+    const diagnostics = get("smash_my_head(smh())");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 14);
+    ist(diagnostics[0].to, 19);
+    ist(diagnostics[0].message, "<code>object</code> expected, got <code>string</code>");
+  });
+
+  it('does not complain about putting "wrong" argument type to any', () => {
+    const diagnostics = get("any_fn(smh())");
+
+    ist(diagnostics.length, 0);
   });
 
   it("comments ignored in arguments", () => {

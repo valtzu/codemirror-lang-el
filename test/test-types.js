@@ -8,8 +8,8 @@ const config = {
   types: {
     "custom44": {
       identifiers: [
-        {name: "property11", type: ["mixed"]},
-        {name: "property22", type: ["mixed"]},
+        {name: "property11", type: ["any"]},
+        {name: "property22", type: ["any"]},
       ],
       functions: [
         {name: "firstMethod", args: [], returnType: ["custom44"]},

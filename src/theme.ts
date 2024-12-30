@@ -22,4 +22,9 @@ export const baseTheme = EditorView.baseTheme({
     opacity: 0.5,
     fontStyle: "inherit !important",
   },
+  "code": {
+    fontSize: ".8em",
+    fontStyle: "monospace",
+    backgroundColor: "rgba(127, 127, 127, .3)",
+  },
 });

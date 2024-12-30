@@ -2,6 +2,7 @@ import { EditorState } from "@codemirror/state";
 import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
 import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
+import { ELScalar } from "./types";
 
 /**
  * @internal
@@ -36,14 +37,23 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
           return;
         }
 
-        let i = 0;
-        let n = node.node.firstChild;
-        while (n) {
-          if (n.name !== 'BlockComment' && ++i > args.length) {
-            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `Unexpected argument` });
+        for (let n = node.node.firstChild, i = 0; n != null; n = n.nextSibling) {
+          if (n.name === 'BlockComment') {
+            continue;
           }
 
-          n = n.nextSibling;
+          if (i > args.length - 1) {
+            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `Unexpected argument` });
+            continue;
+          }
+
+          const typesUsed = Array.from(resolveTypes(state, n, config, true));
+          const typesExpected = args[i].type;
+
+          if (typesExpected && !typesExpected.includes(ELScalar.Any) && !typesUsed.some(x => typesExpected.includes(x))) {
+            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `<code>${typesExpected.join('|')}</code> expected, got <code>${typesUsed.join('|')}</code>` });
+          }
+          i++;
         }
 
         break;
@@ -72,6 +82,14 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
     if (identifier && node.node.parent?.type.isError) {
       diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier "${identifier}"` });
     }
+  });
+
+  diagnostics.forEach(d => {
+    d.renderMessage = () => {
+      const span = document.createElement('span');
+      span.innerHTML = d.message;
+      return span;
+    };
   });
 
   return diagnostics;
