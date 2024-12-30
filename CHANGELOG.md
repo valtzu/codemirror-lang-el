@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+0.8
+---
+
+* Lint type of call arguments, if defined
+
 0.7
 ---
 
