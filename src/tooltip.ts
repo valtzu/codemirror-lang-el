@@ -3,6 +3,7 @@ import { EditorState, StateField } from "@codemirror/state";
 import { EditorView, hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { createInfoElement, getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
+import { MethodAccess, PropertyAccess } from "./syntax.grammar.terms";
 
 function getNodeOrdinal(node: SyntaxNode) {
   let ordinal = -1;
@@ -100,7 +101,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
 
   const skipEmpty = (x: any) => x;
   let info: string;
-  if (tree.parent?.firstChild && tree.parent?.name === 'ObjectAccess' && tree.prevSibling) {
+  if (tree.parent?.firstChild && (tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) && tree.prevSibling) {
     const node = tree.parent.firstChild;
     const types = Array.from(resolveTypes(view.state, node, config, true));
     const name = view.state.sliceDoc(tree.from, tree.to);
