@@ -2,6 +2,19 @@ import { SyntaxNode } from "@lezer/common";
 import { EditorState } from "@codemirror/state";
 import { ELFunction, ELIdentifier, ELKeyword, ELScalar, ExpressionLanguageConfig } from "./types";
 import { t } from "./props";
+import {
+  Method,
+  Function,
+  Property,
+  Variable,
+  PropertyAccess,
+  MethodAccess,
+  Call,
+  Application,
+  TernaryExpression,
+  BinaryExpression,
+  UnaryExpression,
+} from "./syntax.grammar.terms";
 
 export const createInfoElement = (html: string) => {
   const dom = document.createElement("div")
@@ -16,13 +29,13 @@ export function resolveFunctionDefinition(node: SyntaxNode | null, state: Editor
   }
 
   let identifier: string | undefined;
-  if (node.name === 'ObjectAccess' && node.lastChild) {
+  if ((node.type.is(PropertyAccess) || node.type.is(MethodAccess)) && node.lastChild) {
     const leftArgument = node.firstChild?.node;
     const types = Array.from(resolveTypes(state, leftArgument, config, true));
     identifier = state.sliceDoc(node.lastChild.from, node.lastChild.to);
 
     return types.map(type => resolveCallable(identifier, config.types?.[type])).find(x => x);
-  } else if (node.name === 'Function') {
+  } else if (node.type.is(Function)) {
     identifier = state.sliceDoc(node.from, node.node.firstChild ? node.node.firstChild.from - 1 : node.to);
 
     return resolveCallable(identifier, config);
@@ -34,16 +47,16 @@ const resolveCallable = (identifier?: string, config?: {
   functions?: ELFunction[]
 }) => config?.functions?.find(x => x.name === identifier);
 
-export const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' | 'Variable', identifier?: string, config?: {
+export const resolveIdentifier = (nodeTypeId: typeof Method | typeof Property | typeof Function | typeof Variable, identifier?: string, config?: {
   identifiers?: ELIdentifier[],
   functions?: ELFunction[]
 }): ELIdentifier | ELFunction | undefined => {
-  switch (nodeName) {
-    case 'Method':
-    case 'Function':
+  switch (nodeTypeId) {
+    case Method:
+    case Function:
       return resolveCallable(identifier, config);
-    case 'Property':
-    case 'Variable':
+    case Property:
+    case Variable:
       return config?.identifiers?.find(x => x.name === identifier);
   }
 };
@@ -57,34 +70,34 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
   let type;
   if (typeof (type = node.type.prop(t)) !== "undefined") {
     types.add(type);
-  } else if (node.name === 'Call' && node.firstChild && node.lastChild) {
+  } else if (node.type.is(Call) && node.firstChild && node.lastChild) {
     resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
-  } else if (node.name === 'Variable') {
+  } else if (node.type.is(Variable)) {
     const varName = state.sliceDoc(node.from, node.to) || '';
     // @ts-ignore
-    resolveIdentifier(node.name, varName, config)?.type?.forEach((x: string) => types.add(x));
-  } else if (node.name === 'Function') {
+    resolveIdentifier(node.type.id, varName, config)?.type?.forEach((x: string) => types.add(x));
+  } else if (node.type.is(Function)) {
     const varName = state.sliceDoc(node.from, node.to) || '';
     // @ts-ignore
-    resolveIdentifier(node.name, varName, config)?.returnType?.forEach((x: string) => types.add(x));
-  } else if (node.name === 'ObjectAccess' && node.firstChild && node.lastChild?.name === 'Property') {
+    resolveIdentifier(node.type.id, varName, config)?.returnType?.forEach((x: string) => types.add(x));
+  } else if (node.type.is(PropertyAccess) && node.firstChild && node.lastChild?.type.is(Property)) {
     const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
     resolveTypes(state, node.firstChild, config, matchExact)?.forEach(baseType => {
       // @ts-ignore
-      resolveIdentifier(node.lastChild?.name, varName, config.types?.[baseType])?.type?.forEach((x: string) => types.add(x));
+      resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.type?.forEach((x: string) => types.add(x));
     });
-  } else if (node.name === 'ObjectAccess' && node.firstChild && node.lastChild?.name === 'Method') {
+  } else if (node.type.is(MethodAccess) && node.firstChild && node.lastChild?.type.is(Method)) {
     const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
     resolveTypes(state, node.firstChild, config, matchExact)?.forEach(baseType => {
       // @ts-ignore
-      resolveIdentifier(node.lastChild?.name, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
+      resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
     });
-  } else if (node.name === 'Application' && node.firstChild) {
+  } else if (node.type.is(Application) && node.firstChild) {
     resolveTypes(state, node.firstChild, config, matchExact).forEach(x => types.add(x));
-  } else if (node.name === 'TernaryExpression' && node.firstChild && node.firstChild.nextSibling && node.firstChild.nextSibling.nextSibling) {
+  } else if (node.type.is(TernaryExpression) && node.firstChild && node.firstChild.nextSibling && node.firstChild.nextSibling.nextSibling) {
     resolveTypes(state, node.firstChild.nextSibling, config, matchExact).forEach(x => types.add(x));
     resolveTypes(state, node.firstChild.nextSibling.nextSibling, config, matchExact).forEach(x => types.add(x));
-  } else if (node.name === 'BinaryExpression' && node.firstChild?.nextSibling && node.firstChild?.nextSibling?.nextSibling) {
+  } else if (node.type.is(BinaryExpression) && node.firstChild?.nextSibling && node.firstChild?.nextSibling?.nextSibling) {
     const operator = state.sliceDoc(node.firstChild.nextSibling.from, node.firstChild.nextSibling.to);
     if (operator == '?:' || operator == '??' || operator == '?') {
       if (operator == '?:' || operator == '??') {
@@ -96,7 +109,7 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
     } else if (['**', '|', '^', '&', '<<', '>>', '+', '-', '*', '/', '%'].includes(operator)) {
       types.add(ELScalar.Number);
     }
-  } else if (node.name === 'UnaryExpression' && node.firstChild) {
+  } else if (node.type.is(UnaryExpression) && node.firstChild) {
     const operator = state.sliceDoc(node.firstChild.from, node.firstChild.to);
     if (['not', '!'].includes(operator)) {
       types.add(ELScalar.Bool);
