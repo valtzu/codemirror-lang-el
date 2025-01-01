@@ -1,14 +1,19 @@
 import { parser } from "./syntax.grammar";
 import { LRLanguage, LanguageSupport, indentNodeProp, foldNodeProp, delimitedIndent } from "@codemirror/language";
 import { styleTags, tags as t } from "@lezer/highlight";
-import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
+import { ExpressionLanguageConfig } from "./types";
 import { expressionLanguageLinter } from "./linter";
 import { expressionLanguageCompletion } from "./complete";
 import { cursorTooltipField, keywordTooltip } from "./tooltip";
 import { Extension } from "@codemirror/state";
 import { baseTheme } from "./theme";
 
-export { ELFunction, ELIdentifier, ExpressionLanguageConfig };
+export * from "./types";
+// for tests
+export * as _complete from "./complete";
+export * as _linter from "./linter";
+export * as _utils from "./utils";
+export * as _tooltip from "./tooltip";
 
 export const ELLanguage = LRLanguage.define({
   parser: parser.configure({

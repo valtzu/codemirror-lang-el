@@ -1,8 +1,8 @@
-import {EditorState} from "@codemirror/state";
+// @ts-ignore
+import { expressionlanguage, ELLanguage, _linter } from "@valtzu/codemirror-lang-el";
+import { EditorState } from "@codemirror/state";
 import ist from "ist"
-import {syntaxTree} from "@codemirror/language";
-import {expressionlanguage, ELLanguage} from "../dist/index.js";
-import {expressionLanguageLinterSource} from "../dist/linter.js";
+import { syntaxTree } from "@codemirror/language";
 
 const config = {
   types: {
@@ -29,7 +29,7 @@ const config = {
   ],
 };
 
-function get(doc) {
+function get(doc: string) {
   const state = EditorState.create({
     doc,
     selection: { anchor: 0 },
@@ -46,7 +46,7 @@ function get(doc) {
     process.stdout.write('\n');
   }
 
-  return expressionLanguageLinterSource(state);
+  return _linter.expressionLanguageLinterSource(state);
 }
 
 describe("Expression language linting", () => {

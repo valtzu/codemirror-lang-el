@@ -48,7 +48,7 @@ export const resolveIdentifier = (nodeName: 'Method' | 'Property' | 'Function' |
   }
 };
 
-export function resolveTypes(state: EditorState, node: SyntaxNode | undefined, config: ExpressionLanguageConfig, matchExact: boolean): Set<string> {
+export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | null, config: ExpressionLanguageConfig, matchExact: boolean): Set<string> {
   let types: Set<string> = new Set<string>();
   if (!node) {
     return types;

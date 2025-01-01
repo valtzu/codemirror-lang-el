@@ -12,7 +12,7 @@ const autocompleteFunction = (x: ELFunction): Completion => ({
     view.dispatch(
       {
         ...insertCompletionText(view.state, `${x.name}()`, from, to),
-        selection: { anchor: from + x.name.length + (x.args?.length > 0 ? 1 : 2) }
+        selection: { anchor: from + x.name.length + ((x.args?.length ?? 0) > 0 ? 1 : 2) }
       }
     );
   },
