@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+0.9
+---
+
+* **BC BREAK:** Separate files are no longer included in the release (due to using `cm-buildhelper`)
+* Tests are now in TypeScript too
+
+
 0.8
 ---
 

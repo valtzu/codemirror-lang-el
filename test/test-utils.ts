@@ -1,7 +1,7 @@
-import {resolveTypes} from "../dist/utils.js";
-import {ELLanguage, expressionlanguage} from "../dist/index.js";
-import {EditorState} from "@codemirror/state";
-import {syntaxTree} from "@codemirror/language";
+// @ts-ignore
+import { ELLanguage, expressionlanguage, _utils } from "@valtzu/codemirror-lang-el";
+import { EditorState } from "@codemirror/state";
+import { syntaxTree } from "@codemirror/language";
 import * as assert from "node:assert";
 
 const config = {
@@ -28,7 +28,7 @@ const config = {
   ],
 };
 
-function get(doc) {
+function get(doc: string) {
   return EditorState.create({
     doc,
     selection: {anchor: 0},
@@ -57,7 +57,7 @@ describe("Type resolving", () => {
   ].forEach(([doc, type]) =>
     it(`${doc} -> ${type}`, () => {
       const state = get(doc);
-      const types = resolveTypes(state, syntaxTree(state).topNode.firstChild, config, true);
+      const types = _utils.resolveTypes(state, syntaxTree(state).topNode.firstChild, config, true);
       assert.equal(type, [...types].join('|'));
     }),
   );

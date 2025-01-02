@@ -1,13 +1,6 @@
 {
   "compilerOptions": {
-    "strict": true,
-    "target": "es6",
-    "module": "es2020",
-    "newLine": "lf",
-    "declaration": true,
     "moduleResolution": "node",
-    "sourceMap": true,
-    "sourceRoot": "src/"
-  },
-  "include": ["src/*.ts"]
+    "target": "es6"
+  }
 }

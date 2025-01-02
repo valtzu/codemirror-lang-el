@@ -13,7 +13,7 @@ export interface ELIdentifier {
  */
 export interface ELFunction {
   name: string;
-  args: ELParameter[];
+  args?: ELParameter[];
   info?: string;
   returnType?: string[];
 }
