@@ -21,7 +21,7 @@
 @top Expression { expression }
 
 expression {
-  ObjectAccess<Property> |
+  PropertyAccess |
   ArrayAccess |
   Call |
   Number |
@@ -34,9 +34,10 @@ expression {
   TernaryExpression |
   BinaryExpression |
   UnaryExpression |
-  Application { "(" expression ")" }
+  Application
 }
 
+Application { "(" expression ")" }
 Variable { word }
 Function { word }
 Property { word }
@@ -66,17 +67,23 @@ BinaryExpression {
   expression !right (OperatorKeyword | Operator) expression
 }
 
-ObjectAccess<member> {
-  expression !left ( MemberOf | NullSafeMemberOf ) member
+PropertyAccess {
+  expression !left ( MemberOf | NullSafeMemberOf ) Property
+}
+
+MethodAccess {
+  expression !left ( MemberOf | NullSafeMemberOf ) Method
 }
 
 call<callable> {
-  callable Arguments { "(" list ")" }
+  callable Arguments
 }
+
+Arguments { "(" list ")" }
 
 Call {
   call<Function> |
-  call<ObjectAccess<Method>>
+  call<MethodAccess>
 }
 
 TernaryExpression {
