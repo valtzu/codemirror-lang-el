@@ -80,7 +80,7 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
     return null;
   }
 
-  const types = resolveTypes(state, tree.parent.firstChild.node, config, false);
+  const types = resolveTypes(state, tree.parent.firstChild.node, config);
   if (!types?.size) {
     return null;
   }

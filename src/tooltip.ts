@@ -103,7 +103,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
   let info: string;
   if (tree.parent?.firstChild && (tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) && tree.prevSibling) {
     const node = tree.parent.firstChild;
-    const types = Array.from(resolveTypes(view.state, node, config, true));
+    const types = Array.from(resolveTypes(view.state, node, config));
     const name = view.state.sliceDoc(tree.from, tree.to);
     info = [
       ...types.map(type => config.types?.[type]?.identifiers?.find(x => x.name === name)?.info).filter(skipEmpty),

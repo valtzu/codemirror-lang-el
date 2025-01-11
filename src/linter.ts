@@ -48,7 +48,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
             continue;
           }
 
-          const typesUsed = Array.from(resolveTypes(state, n, config, true));
+          const typesUsed = Array.from(resolveTypes(state, n, config));
           const typesExpected = args[i].type;
 
           if (typesExpected && !typesExpected.includes(ELScalar.Any) && !typesUsed.some(x => typesExpected.includes(x))) {
@@ -61,7 +61,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
       case Property:
       case Method:
         const leftArgument = node.node.parent?.firstChild?.node;
-        const types = Array.from(resolveTypes(state, leftArgument, config, true));
+        const types = Array.from(resolveTypes(state, leftArgument, config));
         identifier = state.sliceDoc(from, to);
 
         if (!types.find(type => resolveIdentifier(id, identifier, config.types?.[type]))) {
