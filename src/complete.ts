@@ -5,6 +5,26 @@ import { EditorState } from "@codemirror/state";
 import { SyntaxNode } from "@lezer/common";
 import { getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
 import { syntaxTree } from "@codemirror/language";
+import {
+  Arguments,
+  BinaryExpression,
+  Expression,
+  Function,
+  MethodAccess,
+  OperatorKeyword,
+  PropertyAccess,
+  TernaryExpression,
+  UnaryExpression,
+  Variable,
+  String,
+  BlockComment,
+  ArrayAccess,
+  Call,
+  Application,
+  Property,
+  Method,
+  Array,
+} from "./syntax.grammar.terms";
 
 const autocompleteFunction = (x: ELFunction): Completion => ({
   label: `${x.name}(${x.args?.map(x => x.name)?.join(',') || ''})`,
@@ -56,11 +76,11 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
 }
 
 function completeMember(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult | null {
-  if (tree.parent?.name != 'ObjectAccess' || !tree.parent.firstChild) {
+  if (!(tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) || !tree.parent?.firstChild) {
     return null;
   }
 
-  const types = resolveTypes(state, tree.parent.firstChild.node, config, false);
+  const types = resolveTypes(state, tree.parent.firstChild.node, config);
   if (!types?.size) {
     return null;
   }
@@ -89,31 +109,31 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   const prevNode = tree.resolveInner(pos, lastChar === ')' ? 0 : -1);
   const config = getExpressionLanguageConfig(state);
 
-  const isIdentifier = (node: SyntaxNode | undefined) => ['Variable', 'Function'].includes(node?.name ?? '');
-  const isMember = (node: SyntaxNode | undefined) => ['Property', 'Method'].includes(node?.name ?? '');
+  const isIdentifier = (node: SyntaxNode | undefined) => node?.type.is(Variable) || node?.type.is(Function);
+  const isMember = (node: SyntaxNode | undefined) => node?.type.is(Property) || node?.type.is(Method);
 
-  if (prevNode.name == 'String' || prevNode.name == 'BlockComment') {
+  if (prevNode.type.is(String) || prevNode.type.is(BlockComment)) {
     return null;
   }
 
-  if (prevNode.parent?.name == 'ObjectAccess' && ['ObjectAccess', 'ArrayAccess', 'Variable', 'Call', 'Application'].includes(prevNode.parent.firstChild?.name || '')) {
+  if ((prevNode.parent?.type.is(PropertyAccess) || prevNode.parent?.type.is(MethodAccess)) && [PropertyAccess, MethodAccess, ArrayAccess, Variable, Call, Application].includes(prevNode.parent.firstChild?.type.id)) {
     return completeMember(state, config, prevNode, isIdentifier(prevNode) || isMember(prevNode) ? prevNode.from : pos, pos, explicit);
   }
 
   if (
-    ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(prevNode.name) && prevNode.lastChild && !prevNode.lastChild?.type.isError
-    || ['Arguments', 'Array'].includes(prevNode.name) && prevNode.lastChild && !prevNode.lastChild?.type.isError
-    || ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(prevNode.parent?.name ?? '') && prevNode.type.isError
-    || ['Variable', 'Function'].includes(prevNode.parent?.name ?? '') && prevNode.type.isError
+    [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.type.id) && prevNode.lastChild && !prevNode.lastChild?.type.isError
+    || [Arguments, Array].includes(prevNode.type.id) && prevNode.lastChild && !prevNode.lastChild?.type.isError
+    || [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.parent?.type.id) && prevNode.type.isError
+    || [Variable, Function].includes(prevNode.parent?.type.id) && prevNode.type.isError
   ) {
-    return completeOperatorKeyword(state, config, prevNode, !['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression', 'Arguments'].includes(prevNode.name) ? prevNode.from : pos, pos, explicit);
+    return completeOperatorKeyword(state, config, prevNode, ![Expression, UnaryExpression, BinaryExpression, TernaryExpression, Arguments].includes(prevNode.type.id) ? prevNode.from : pos, pos, explicit);
   }
 
   if (
-    !/[0-9]/.test(lastChar) && !['OperatorKeyword'].includes(prevNode.name ?? '') && (
-      ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression'].includes(prevNode.name) && prevNode.lastChild?.type.isError
-      || ['Expression', 'UnaryExpression', 'BinaryExpression', 'TernaryExpression', 'Arguments'].includes(prevNode.parent?.name ?? '') && !prevNode.type.isError
-      || ['Arguments', 'Array'].includes(prevNode.name ?? '')
+    !/[0-9]/.test(lastChar) && !prevNode.type.is(OperatorKeyword) && (
+      [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.type.id) && prevNode.lastChild?.type.isError
+      || [Expression, UnaryExpression, BinaryExpression, TernaryExpression, Arguments].includes(prevNode.parent?.type.id ?? -1) && !prevNode.type.isError
+      || prevNode.type.is(Arguments) || prevNode.type.is(Array)
     )
   ) {
     return completeIdentifier(state, config, prevNode, isIdentifier(prevNode) ? prevNode.from : pos, pos);

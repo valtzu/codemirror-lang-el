@@ -3,6 +3,7 @@ import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
 import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
 import { ELScalar } from "./types";
+import { Arguments, Method, Property, Variable, Function, BlockComment } from "./syntax.grammar.terms";
 
 /**
  * @internal
@@ -12,11 +13,11 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
   let diagnostics: Diagnostic[] = [];
 
   syntaxTree(state).cursor().iterate(node => {
-    const { from, to, name } = node;
+    const { from, to, type: { id } } = node;
 
     let identifier: string | undefined;
-    switch (name) {
-      case '⚠':
+    switch (id) {
+      case 0:
         if (state.doc.length === 0 || from === 0) {
           // Don't show error on empty doc (even though it is an error)
           return;
@@ -31,14 +32,14 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         }
 
         return;
-      case 'Arguments':
+      case Arguments:
         const args = resolveFunctionDefinition(node.node.prevSibling, state, config)?.args;
         if (!args) {
           return;
         }
 
         for (let n = node.node.firstChild, i = 0; n != null; n = n.nextSibling) {
-          if (n.name === 'BlockComment') {
+          if (n.type.is(BlockComment)) {
             continue;
           }
 
@@ -47,7 +48,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
             continue;
           }
 
-          const typesUsed = Array.from(resolveTypes(state, n, config, true));
+          const typesUsed = Array.from(resolveTypes(state, n, config));
           const typesExpected = args[i].type;
 
           if (typesExpected && !typesExpected.includes(ELScalar.Any) && !typesUsed.some(x => typesExpected.includes(x))) {
@@ -57,22 +58,22 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         }
 
         break;
-      case 'Property':
-      case 'Method':
+      case Property:
+      case Method:
         const leftArgument = node.node.parent?.firstChild?.node;
-        const types = Array.from(resolveTypes(state, leftArgument, config, true));
+        const types = Array.from(resolveTypes(state, leftArgument, config));
         identifier = state.sliceDoc(from, to);
 
-        if (!types.find(type => resolveIdentifier(name, identifier, config.types?.[type]))) {
+        if (!types.find(type => resolveIdentifier(id, identifier, config.types?.[type]))) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.name} "${identifier}" not found in ${types.join('|')}` });
         }
 
         break;
 
-      case 'Variable':
-      case 'Function':
+      case Variable:
+      case Function:
         identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
-        if (!resolveIdentifier(name, identifier, config)) {
+        if (!resolveIdentifier(id, identifier, config)) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} "${identifier}" not found` });
         }
 

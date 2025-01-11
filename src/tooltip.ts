@@ -1,8 +1,9 @@
 import { SyntaxNode } from "@lezer/common";
 import { EditorState, StateField } from "@codemirror/state";
-import { EditorView, hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
+import { hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { createInfoElement, getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
+import { Arguments, Function, Method, MethodAccess, OperatorKeyword, Property, PropertyAccess, Variable } from "./syntax.grammar.terms";
 
 function getNodeOrdinal(node: SyntaxNode) {
   let ordinal = -1;
@@ -16,7 +17,7 @@ function getNodeOrdinal(node: SyntaxNode) {
 function resolveArguments(node: SyntaxNode) {
   let c: SyntaxNode | null = node;
 
-  while (c && c.name !== 'Arguments') {
+  while (c && !c.type.is(Arguments)) {
     c = c.parent;
   }
 
@@ -81,7 +82,7 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
   const config = getExpressionLanguageConfig(view.state);
   const tree: SyntaxNode = syntaxTree(view.state).resolveInner(pos, side);
 
-  if (tree.name === 'OperatorKeyword') {
+  if (tree.type.is(OperatorKeyword)) {
     const name = view.state.sliceDoc(tree.from, tree.to);
     const info = keywords.find(x => x.name === name)?.info;
     if (info) {
@@ -94,15 +95,15 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
     }
   }
 
-  if (!['Function', 'Variable', 'Method', 'Property'].includes(tree.name)) {
+  if (![Function, Variable, Method, Property].includes(tree.type.id)) {
     return null;
   }
 
   const skipEmpty = (x: any) => x;
   let info: string;
-  if (tree.parent?.firstChild && tree.parent?.name === 'ObjectAccess' && tree.prevSibling) {
+  if (tree.parent?.firstChild && (tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) && tree.prevSibling) {
     const node = tree.parent.firstChild;
-    const types = Array.from(resolveTypes(view.state, node, config, true));
+    const types = Array.from(resolveTypes(view.state, node, config));
     const name = view.state.sliceDoc(tree.from, tree.to);
     info = [
       ...types.map(type => config.types?.[type]?.identifiers?.find(x => x.name === name)?.info).filter(skipEmpty),

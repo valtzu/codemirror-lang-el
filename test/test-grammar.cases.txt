@@ -36,7 +36,7 @@ one?.two
 
 ==>
 
-Expression(ObjectAccess(Variable, NullSafeMemberOf, Property))
+Expression(PropertyAccess(Variable, NullSafeMemberOf, Property))
 
 # Null-coalescing operator
 
@@ -124,7 +124,7 @@ getObj().prop
 
 ==>
 
-Expression(ObjectAccess(Call(Function, Arguments), MemberOf, Property))
+Expression(PropertyAccess(Call(Function, Arguments), MemberOf, Property))
 
 # Object method
 
@@ -132,7 +132,7 @@ foo.prop(123)
 
 ==>
 
-Expression(Call(ObjectAccess(Variable, MemberOf, Method), Arguments(Number)))
+Expression(Call(MethodAccess(Variable, MemberOf, Method), Arguments(Number)))
 
 # Object access within binary expression
 
@@ -140,7 +140,7 @@ is_granted(user, user.self.getGroup()) + user.self
 
 ==>
 
-Expression(BinaryExpression(Call(Function, Arguments(Variable, Call(ObjectAccess(ObjectAccess(Variable, MemberOf, Property), MemberOf, Method), Arguments))), Operator, ObjectAccess(Variable, MemberOf, Property)))
+Expression(BinaryExpression(Call(Function, Arguments(Variable, Call(MethodAccess(PropertyAccess(Variable, MemberOf, Property), MemberOf, Method), Arguments))), Operator, PropertyAccess(Variable, MemberOf, Property)))
 
 # Keywords require breaking character
 
