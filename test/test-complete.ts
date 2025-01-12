@@ -129,7 +129,7 @@ describe("Expression language completion", () => {
   });
 
   it("completes only operators after method call", async () => {
-    const c = await get("obj.firstMethod()‸") ?? [];
+    const c = await get("obj.firstMethod() ‸") ?? [];
     ist(!c.find(x => x.label === 'firstMethod()'));
     ist(!c.find(x => x.label === 'obj'));
     ist(c.find((x: Completion) => x.label === 'starts with'));
@@ -157,6 +157,10 @@ describe("Expression language completion", () => {
 
   it("does not complete right after operator keywords", async () => {
     ist(null, await get("1 and‸"));
+  });
+
+  it("does not complete right after closing bracket", async () => {
+    ist(null, await get("(1)‸"));
   });
 
   it("does complete after ternary expression", async () => {

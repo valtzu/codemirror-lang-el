@@ -121,10 +121,12 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   }
 
   if (
-    [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.type.id) && prevNode.lastChild && !prevNode.lastChild?.type.isError
-    || [Arguments, Array].includes(prevNode.type.id) && prevNode.lastChild && !prevNode.lastChild?.type.isError
-    || [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.parent?.type.id) && prevNode.type.isError
-    || [Variable, Function].includes(prevNode.parent?.type.id) && prevNode.type.isError
+    /^[\sa-z]*$/.test(lastChar) && (
+      [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.type.id) && prevNode.lastChild && !prevNode.lastChild?.type.isError
+      || [Arguments, Array].includes(prevNode.type.id) && prevNode.lastChild && !prevNode.lastChild?.type.isError
+      || [Expression, UnaryExpression, BinaryExpression, TernaryExpression].includes(prevNode.parent?.type.id) && prevNode.type.isError
+      || [Variable, Function].includes(prevNode.parent?.type.id) && prevNode.type.isError
+    )
   ) {
     return completeOperatorKeyword(state, config, prevNode, ![Expression, UnaryExpression, BinaryExpression, TernaryExpression, Arguments].includes(prevNode.type.id) ? prevNode.from : pos, pos, explicit);
   }

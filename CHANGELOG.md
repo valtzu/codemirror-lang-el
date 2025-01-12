@@ -6,7 +6,7 @@ CHANGELOG
 
 * **BC BREAK:** Separate files are no longer included in the release (due to using `cm-buildhelper`)
 * Tests are now in TypeScript too
-
+* Autocomplete is now less aggressive
 
 0.8
 ---
