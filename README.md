@@ -6,19 +6,33 @@
 
 #### Linting
 
-![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/dd221b7d-7cc6-494f-9823-dae8a55eca03)
+![image](https://github.com/user-attachments/assets/7f7dca5b-51fb-41d0-bfe2-d64a6ac6bf85)
+
+1. Lint variable & function names
+1. Lint object properties & methods, even on expression result
+1. Lint argument count (only max. count checked for now)
+1. Lint argument types
 
 #### Autocompletion
 
 ![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/a5a7bfdc-2869-4cbb-98f6-0abe361d55ba)
 
+1. Complete variables & functions
+1. Complete object properties & methods, even on expression result
+1. Complete operator keywords (like `starts with`)
+1. Show list of all available keywords (using `Ctrl+space` by default)
+
 #### Hover tooltip
 
 ![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/3cfd7a49-4503-491c-972d-26d209ea26f3)
 
+1. Show description about a variable / function / object member / keyword
+
 #### Function argument hints
 
-![image](https://github.com/valtzu/codemirror-lang-el/assets/652734/129eb510-a2aa-479e-b1de-dd0232b33299)
+![image](https://github.com/user-attachments/assets/571e056a-3947-4eda-b118-4f1850428fc4)
+
+1. Show function argument name when the editor cursor is exactly at starting position of the argument
 
 ---
 
@@ -94,4 +108,4 @@ yarn add @valtzu/codemirror-lang-el
 
 ### Contributing
 
-Contributions are accepted.
+Contributions are welcome.
