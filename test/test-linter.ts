@@ -92,7 +92,7 @@ describe("Expression language linting", () => {
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 18);
     ist(diagnostics[0].to, 19);
-    ist(diagnostics[0].message, "Unexpected argument");
+    ist(diagnostics[0].message, "Unexpected argument – <code>smash_my_head</code> takes 1 argument");
   });
 
   it("complains about wrong argument type using constant", () => {

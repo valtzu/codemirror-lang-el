@@ -33,7 +33,8 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
 
         return;
       case Arguments:
-        const args = resolveFunctionDefinition(node.node.prevSibling, state, config)?.args;
+        const fn = resolveFunctionDefinition(node.node.prevSibling, state, config);
+        const args = fn?.args;
         if (!args) {
           return;
         }
@@ -44,7 +45,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
           }
 
           if (i > args.length - 1) {
-            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `Unexpected argument` });
+            diagnostics.push({ from: n.from, to: n.to, severity: 'warning', message: `Unexpected argument – <code>${fn.name}</code> takes ${args.length} argument${args.length == 1 ? '' : 's'}` });
             continue;
           }
 

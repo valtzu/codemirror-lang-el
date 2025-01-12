@@ -7,6 +7,7 @@ CHANGELOG
 * **BC BREAK:** Separate files are no longer included in the release (due to using `cm-buildhelper`)
 * Tests are now in TypeScript too
 * Autocomplete is now less aggressive
+* Severity of "too many arguments" linter error was lowered from error -> warning
 
 0.8
 ---
