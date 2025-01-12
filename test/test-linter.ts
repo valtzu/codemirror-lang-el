@@ -54,7 +54,7 @@ describe("Expression language linting", () => {
     const diagnostics = get("notfound / 5");
 
     ist(diagnostics.length, 1);
-    ist(diagnostics[0].message, 'Variable "notfound" not found');
+    ist(diagnostics[0].message, 'Variable <code>notfound</code> not found');
     ist(diagnostics[0].from, 0);
     ist(diagnostics[0].to, 8);
   });
@@ -63,7 +63,7 @@ describe("Expression language linting", () => {
     const diagnostics = get("obj + notfound()");
 
     ist(diagnostics.length, 1);
-    ist(diagnostics[0].message, 'Function "notfound" not found');
+    ist(diagnostics[0].message, 'Function <code>notfound</code> not found');
     ist(diagnostics[0].from, 6);
     ist(diagnostics[0].to, 14);
   });
@@ -72,7 +72,7 @@ describe("Expression language linting", () => {
     const diagnostics = get("obj obj");
 
     ist(diagnostics.length, 1);
-    ist(diagnostics[0].message, "Unexpected identifier 'obj'");
+    ist(diagnostics[0].message, "Unexpected identifier <code>obj</code>");
     ist(diagnostics[0].from, 4);
     ist(diagnostics[0].to, 7);
   });

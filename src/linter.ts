@@ -28,7 +28,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
           diagnostics.push({ from, to: node.node.parent?.parent?.to ?? to, severity: 'error', message: `Expression expected` });
         } else {
           const type = /^[a-zA-Z_]+[a-zA-Z_0-9]*$/.test(identifier) ? 'identifier' : 'operator';
-          diagnostics.push({ from, to, severity: 'error', message: `Unexpected ${type} '${identifier}'` });
+          diagnostics.push({ from, to, severity: 'error', message: `Unexpected ${type} <code>${identifier}</code>` });
         }
 
         return;
@@ -66,7 +66,7 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         identifier = state.sliceDoc(from, to);
 
         if (!types.find(type => resolveIdentifier(id, identifier, config.types?.[type]))) {
-          diagnostics.push({ from, to, severity: 'error', message: `${node.name} "${identifier}" not found in ${types.join('|')}` });
+          diagnostics.push({ from, to, severity: 'error', message: `${node.name} <code>${identifier}</code> not found in <code>${types.join('|')}</code>` });
         }
 
         break;
@@ -75,14 +75,14 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
       case Function:
         identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
         if (!resolveIdentifier(id, identifier, config)) {
-          diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} "${identifier}" not found` });
+          diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} <code>${identifier}</code> not found` });
         }
 
         break;
     }
 
     if (identifier && node.node.parent?.type.isError) {
-      diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier "${identifier}"` });
+      diagnostics.push({ from, to, severity: 'error', message: `Unexpected identifier <code>${identifier}</code>` });
     }
   });
 
