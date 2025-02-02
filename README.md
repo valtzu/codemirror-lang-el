@@ -10,7 +10,7 @@
 
 1. Lint variable & function names
 1. Lint object properties & methods, even on expression result
-1. Lint argument count (only max. count checked for now)
+1. Lint argument count
 1. Lint argument types
 
 #### Autocompletion
