@@ -38,14 +38,18 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         if (!args) {
           return;
         }
+        const argCountMin = args.reduce((count, arg) => count + Number(!arg.optional), 0);
+        const argCountMax = args.length;
+        const argumentCountHintFn = () => `<code>${fn.name}</code> takes ${argCountMin == argCountMax ? `exactly ${argCountMax}` : `${argCountMin}–${argCountMax}`} argument${argCountMax == 1 ? '' : 's'}`;
+        let i = 0;
 
-        for (let n = node.node.firstChild, i = 0; n != null; n = n.nextSibling) {
+        for (let n = node.node.firstChild; n != null; n = n.nextSibling) {
           if (n.type.is(BlockComment)) {
             continue;
           }
 
-          if (i > args.length - 1) {
-            diagnostics.push({ from: n.from, to: n.to, severity: 'warning', message: `Unexpected argument – <code>${fn.name}</code> takes ${args.length} argument${args.length == 1 ? '' : 's'}` });
+          if (i > argCountMax - 1) {
+            diagnostics.push({ from: n.from, to: n.to, severity: 'warning', message: `Unexpected argument – ${argumentCountHintFn()}` });
             continue;
           }
 
@@ -56,6 +60,10 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
             diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `<code>${typesExpected.join('|')}</code> expected, got <code>${typesUsed.join('|')}</code>` });
           }
           i++;
+        }
+
+        if (i < argCountMin) {
+          diagnostics.push({ from: node.from, to: node.to, severity: 'error', message: `Too few arguments – ${argumentCountHintFn()}` });
         }
 
         break;

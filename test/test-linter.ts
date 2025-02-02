@@ -23,7 +23,7 @@ const config = {
   ],
   functions: [
     {name: "smh", args: [], returnType: ["string"]},
-    {name: "any_fn", args: [{name: "anything", type: ["any"]}], returnType: ["any"]},
+    {name: "any_fn", args: [{name: "anything", type: ["any"]}, {name: "optional", optional: true}], returnType: ["any"]},
     {name: "smash_my_head", args: [{name: "object", type: ["object"]}]},
     {name: "getObject", returnType: ["custom44"]},
   ],
@@ -92,7 +92,32 @@ describe("Expression language linting", () => {
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 18);
     ist(diagnostics[0].to, 19);
-    ist(diagnostics[0].message, "Unexpected argument – <code>smash_my_head</code> takes 1 argument");
+    ist(diagnostics[0].message, "Unexpected argument – <code>smash_my_head</code> takes exactly 1 argument");
+  });
+
+  it("complains about too many arguments when there are optional arguments", () => {
+    const diagnostics = get("any_fn(1, 2, 3)");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 13);
+    ist(diagnostics[0].to, 14);
+    ist(diagnostics[0].message, "Unexpected argument – <code>any_fn</code> takes 1–2 arguments");
+  });
+
+  it("complains about too few arguments", () => {
+    const diagnostics = get("smash_my_head()");
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 13);
+    ist(diagnostics[0].to, 15);
+    ist(diagnostics[0].message, "Too few arguments – <code>smash_my_head</code> takes exactly 1 argument");
+  });
+
+  it("complains about too few arguments when there are optional arguments", () => {
+    const diagnostics = get("any_fn()");
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 6);
+    ist(diagnostics[0].to, 8);
+    ist(diagnostics[0].message, "Too few arguments – <code>any_fn</code> takes 1–2 arguments");
   });
 
   it("complains about wrong argument type using constant", () => {

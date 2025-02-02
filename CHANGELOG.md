@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+0.10
+---
+
+* Exclude optional arguments when linting argument count
+* Lint minimum argument count
+
 0.9
 ---
 
