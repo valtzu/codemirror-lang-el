@@ -58,6 +58,10 @@ yarn add @valtzu/codemirror-lang-el
 
 ---
 
+### Configuration
+
+See [CONFIGURATION.md](CONFIGURATION.md)
+
 ### Example
 
 [Live demo](https://jsfiddle.net/turse2xq/)
