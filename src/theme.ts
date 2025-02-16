@@ -26,5 +26,8 @@ export const baseTheme = EditorView.baseTheme({
     fontSize: ".8em",
     fontStyle: "monospace",
     backgroundColor: "rgba(127, 127, 127, .3)",
+    display: 'inline-block',
+    padding: '2px 4px',
+    borderRadius: '3px',
   },
 });
