@@ -3,7 +3,7 @@ import { Completion, CompletionContext, CompletionResult, insertCompletionText }
 import { ELFunction, ELIdentifier, ExpressionLanguageConfig } from "./types";
 import { EditorState } from "@codemirror/state";
 import { SyntaxNode } from "@lezer/common";
-import { getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
+import { createCompletionInfoElement, getExpressionLanguageConfig, keywords, resolveTypes } from "./utils";
 import { syntaxTree } from "@codemirror/language";
 import {
   Arguments,
@@ -37,13 +37,13 @@ const autocompleteFunction = (x: ELFunction): Completion => ({
     );
   },
   detail: x.returnType?.join('|'),
-  info: x.info,
+  info: () => ({ dom: createCompletionInfoElement(x.info) }),
   type: "function",
 });
 const autocompleteIdentifier = (x: ELIdentifier): Completion => ({
   label: x.name,
   apply: x.name,
-  info: x.info,
+  info: () => ({ dom: createCompletionInfoElement(x.info) }),
   detail: x.detail || x.type?.join('|'),
   type: 'variable',
 });
@@ -55,7 +55,7 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
     options: keywords.map(({ name, info, detail }) => ({
       label: name,
       apply: `${name} `,
-      info: info,
+      info: () => ({ dom: createCompletionInfoElement(info) }),
       detail,
       type: "keyword"
     })) ?? [],

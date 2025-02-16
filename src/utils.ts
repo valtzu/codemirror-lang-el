@@ -23,6 +23,12 @@ export const createInfoElement = (html: string) => {
   return dom;
 };
 
+export const createCompletionInfoElement = (html: string) => {
+  const dom = document.createElement("div")
+  dom.innerHTML = html;
+  return dom;
+};
+
 export function resolveFunctionDefinition(node: SyntaxNode | null, state: EditorState, config: ExpressionLanguageConfig) {
   if (!node) {
     return undefined;
