@@ -36,6 +36,16 @@
 
 ### Installation
 
+#### Web Component
+
+If you're using Bootstrap UI, check the [Web Component](https://github.com/valtzu/symfony-expression-editor) to hide all CodeMirror stuff.
+
+```html
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script type="module" src="https://esm.sh/symfony-expression-editor@0.1.0"></script>
+<textarea class="form-control" is="expression-editor" rows="1">'foobar' starts with 'foo'</textarea>
+```
+
 #### Symfony AssetMapper
 
 ```
