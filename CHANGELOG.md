@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+1.0
+---
+
+* Render completion info as HTML
+* Bump to stable
+
 0.10
 ---
 

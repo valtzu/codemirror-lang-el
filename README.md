@@ -1,7 +1,5 @@
 ## Symfony Expression Language support for CodeMirror 6
 
-> :warning: **This is unstable**: Expect breaking changes until v1 is out.
-
 ### Features
 
 #### Linting
