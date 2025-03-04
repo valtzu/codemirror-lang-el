@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.1
+---
+
+* Lint right-side argument type for `in` operator
+
 1.0
 ---
 

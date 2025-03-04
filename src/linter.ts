@@ -3,7 +3,7 @@ import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
 import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
 import { ELScalar } from "./types";
-import { Arguments, Method, Property, Variable, Function, BlockComment } from "./syntax.grammar.terms";
+import { Arguments, Method, Property, Variable, Function, BlockComment, BinaryExpression, OperatorKeyword } from "./syntax.grammar.terms";
 
 /**
  * @internal
@@ -84,6 +84,21 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
         if (!resolveIdentifier(id, identifier, config)) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} <code>${identifier}</code> not found` });
+        }
+
+        break;
+
+      case BinaryExpression:
+        const operatorNode = node.node.getChild(OperatorKeyword);
+        if (operatorNode) {
+          const operator = state.sliceDoc(operatorNode.from, operatorNode.to);
+          if (operator === 'in') {
+            const rightArgument = node.node.lastChild;
+            const types = resolveTypes(state, rightArgument, config);
+            if (!types.has(ELScalar.Array)) {
+              diagnostics.push({ from: rightArgument.from, to: rightArgument.to, severity: 'error', message: `<code>${ELScalar.Array}</code> expected, got <code>${[...types].join('|')}</code>` });
+            }
+          }
         }
 
         break;

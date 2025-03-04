@@ -155,4 +155,13 @@ describe("Expression language linting", () => {
 
     ist(diagnostics.length, 0);
   });
+
+  it("complains about non-array after 'in' operator", () => {
+    const diagnostics = get("'foo' in 'foobar'");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 9);
+    ist(diagnostics[0].to, 17);
+    ist(diagnostics[0].message, "<code>array</code> expected, got <code>string</code>");
+  });
 });

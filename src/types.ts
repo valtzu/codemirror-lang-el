@@ -65,6 +65,8 @@ export enum ELScalar {
   String = 'string',
   /** Equivalent to PHP `null` */
   Null = 'null',
+  /** Equivalent to PHP `array` */
+  Array = 'array',
   /** Equivalent to PHP `mixed` */
   Any = 'any',
 }
