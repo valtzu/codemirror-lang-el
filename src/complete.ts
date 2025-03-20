@@ -37,13 +37,13 @@ const autocompleteFunction = (x: ELFunction): Completion => ({
     );
   },
   detail: x.returnType?.join('|'),
-  info: () => ({ dom: createCompletionInfoElement(x.info) }),
+  info: () => createCompletionInfoElement(x.info),
   type: "function",
 });
 const autocompleteIdentifier = (x: ELIdentifier): Completion => ({
   label: x.name,
   apply: x.name,
-  info: () => ({ dom: createCompletionInfoElement(x.info) }),
+  info: () => createCompletionInfoElement(x.info),
   detail: x.detail || x.type?.join('|'),
   type: 'variable',
 });
@@ -55,7 +55,7 @@ function completeOperatorKeyword(state: EditorState, config: ExpressionLanguageC
     options: keywords.map(({ name, info, detail }) => ({
       label: name,
       apply: `${name} `,
-      info: () => ({ dom: createCompletionInfoElement(info) }),
+      info: () => createCompletionInfoElement(info),
       detail,
       type: "keyword"
     })) ?? [],

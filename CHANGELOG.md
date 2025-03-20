@@ -5,6 +5,7 @@ CHANGELOG
 ---
 
 * Lint right-side argument type for `in` operator
+* Fix `undefined` in completion keyword tooltip (#19)
 
 1.0
 ---

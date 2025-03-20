@@ -24,9 +24,13 @@ export const createInfoElement = (html: string) => {
 };
 
 export const createCompletionInfoElement = (html: string) => {
+  if (!html) {
+    return undefined;
+  }
+
   const dom = document.createElement("div")
   dom.innerHTML = html;
-  return dom;
+  return { dom };
 };
 
 export function resolveFunctionDefinition(node: SyntaxNode | null, state: EditorState, config: ExpressionLanguageConfig) {
