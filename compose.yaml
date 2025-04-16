@@ -1,0 +1,9 @@
+services:
+  codex:
+    working_dir: /app
+    volumes:
+      - .:/app
+    user: ${UID:-1000}:${GID:-1000}
+    env_file: [.env]
+    build:
+      dockerfile: Dockerfile

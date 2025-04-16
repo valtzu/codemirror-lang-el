@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.2
+---
+
+* Add Codex CLI and Docker Compose integration
+
 1.1
 ---
 
