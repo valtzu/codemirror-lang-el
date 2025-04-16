@@ -4,6 +4,7 @@ CHANGELOG
 1.2
 ---
 
+* Add support for typed arrays
 * Add Codex CLI and Docker Compose integration
 
 1.1

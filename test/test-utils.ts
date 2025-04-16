@@ -19,7 +19,10 @@ const config = {
   identifiers: [
     {name: "foobar"},
     {name: "foobaz"},
-    {name: "obj", type: ["custom44"]}
+    {name: "obj", type: ["custom44"]},
+    // Typed array examples
+    {name: "arr",  type: ["string[]"]},
+    {name: "arr2", type: ["string[][]"]}
   ],
   functions: [
     {name: "smh", args: [], returnType: ["string"]},
@@ -54,6 +57,11 @@ describe("Type resolving", () => {
     ['!1', 'bool'],
     ['+false', 'number'],
     ['-true', 'number'],
+    // Typed array indexing should yield element type
+    ['arr[0]', 'string'],
+    // Nested array indexing: string[][] -> string[] then string
+    ['arr2[0]', 'string[]'],
+    ['arr2[0][0]', 'string'],
   ].forEach(([doc, type]) =>
     it(`${doc} -> ${type}`, () => {
       const state = get(doc);

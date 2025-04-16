@@ -14,6 +14,7 @@ import {
   TernaryExpression,
   BinaryExpression,
   UnaryExpression,
+  ArrayAccess,
 } from "./syntax.grammar.terms";
 
 export const createInfoElement = (html: string) => {
@@ -101,6 +102,17 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
     resolveTypes(state, node.firstChild, config)?.forEach(baseType => {
       // @ts-ignore
       resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
+    });
+  }
+  // Array indexing: for typed arrays (e.g. Foo[]) return element type, for generic arrays return any
+  else if (node.type.is(ArrayAccess) && node.firstChild) {
+    const left = node.firstChild.node;
+    resolveTypes(state, left, config).forEach(baseType => {
+      if (baseType.endsWith('[]')) {
+        types.add(baseType.slice(0, -2));
+      } else if (baseType === ELScalar.Array) {
+        types.add(ELScalar.Any);
+      }
     });
   } else if (node.type.is(Application) && node.firstChild) {
     resolveTypes(state, node.firstChild, config).forEach(x => types.add(x));
