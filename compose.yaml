@@ -6,4 +6,8 @@ services:
     user: ${UID:-1000}:${GID:-1000}
     env_file: [.env]
     build:
-      dockerfile: Dockerfile
+      dockerfile_inline: |
+        FROM node:22
+        RUN npm i -g @openai/codex
+        ENV HOME=/tmp
+        CMD ["codex"]
