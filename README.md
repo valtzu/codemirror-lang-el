@@ -72,7 +72,7 @@ See [CONFIGURATION.md](CONFIGURATION.md)
 
 ### Example
 
-[Live demo](https://jsfiddle.net/turse2xq/)
+[Live demo](https://jsfiddle.net/32ybaetz/)
 
 ```html
 <div id="editor"></div>
