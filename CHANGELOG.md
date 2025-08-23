@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.3
+---
+
+* Lint left- and right-side arguments of `contains`, `starts with`, `ends with` and `matches` operators
+
 1.2
 ---
 
