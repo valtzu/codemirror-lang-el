@@ -88,20 +88,31 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
 
         break;
 
-      case BinaryExpression:
+      case BinaryExpression: {
         const operatorNode = node.node.getChild(OperatorKeyword);
         if (operatorNode) {
           const operator = state.sliceDoc(operatorNode.from, operatorNode.to);
+          const leftArgument = node.node.firstChild;
+          const rightArgument = node.node.lastChild;
           if (operator === 'in') {
-            const rightArgument = node.node.lastChild;
             const types = resolveTypes(state, rightArgument, config);
             if (!types.has(ELScalar.Array)) {
               diagnostics.push({ from: rightArgument.from, to: rightArgument.to, severity: 'error', message: `<code>${ELScalar.Array}</code> expected, got <code>${[...types].join('|')}</code>` });
             }
+          } else if (["contains", "starts with", "ends with", "matches"].includes(operator)) {
+            // Both sides must be string
+            const leftTypes = resolveTypes(state, leftArgument, config);
+            const rightTypes = resolveTypes(state, rightArgument, config);
+            if (!leftTypes.has(ELScalar.String)) {
+              diagnostics.push({ from: leftArgument.from, to: leftArgument.to, severity: 'error', message: `<code>string</code> expected, got <code>${[...leftTypes].join('|')}</code>` });
+            }
+            if (!rightTypes.has(ELScalar.String)) {
+              diagnostics.push({ from: rightArgument.from, to: rightArgument.to, severity: 'error', message: `<code>string</code> expected, got <code>${[...rightTypes].join('|')}</code>` });
+            }
           }
         }
-
         break;
+      }
     }
 
     if (identifier && node.node.parent?.type.isError) {

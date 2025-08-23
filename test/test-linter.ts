@@ -164,4 +164,23 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].to, 17);
     ist(diagnostics[0].message, "<code>array</code> expected, got <code>string</code>");
   });
+
+  it("complains about non-string arguments for 'contains' operator", () => {
+    // Left side not string
+    let diagnostics = get("1 contains 'foo'");
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].message, "<code>string</code> expected, got <code>number</code>");
+    // Right side not string
+    diagnostics = get("'foo' contains 1");
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].message, "<code>string</code> expected, got <code>number</code>");
+    // Both sides not string
+    diagnostics = get("1 contains 2");
+    ist(diagnostics.length, 2);
+    ist(diagnostics[0].message, "<code>string</code> expected, got <code>number</code>");
+    ist(diagnostics[1].message, "<code>string</code> expected, got <code>number</code>");
+    // Both sides string: no error
+    diagnostics = get("'foo' contains 'bar'");
+    ist(diagnostics.length, 0);
+  });
 });
