@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error TS2307
 import { ELLanguage, expressionlanguage, _utils } from "@valtzu/codemirror-lang-el";
 import { EditorState } from "@codemirror/state";
 import { syntaxTree } from "@codemirror/language";

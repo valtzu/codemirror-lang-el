@@ -4,7 +4,9 @@
   "scripts": {
     "pretest": "npm run-script prepare",
     "test": "cm-runtests",
-    "prepare": "cm-buildhelper src/index.ts"
+    "prepare": "cm-buildhelper src/index.ts",
+    "lint-fix": "eslint . --fix --ext .ts,.js",
+    "lint": "eslint . --ext .ts,.js"
   },
   "type": "module",
   "main": "dist/index.cjs",
@@ -28,7 +30,10 @@
     "@codemirror/buildhelper": "^1.0.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.5",
-    "tsdoc-markdown": "^1.1.1"
+    "tsdoc-markdown": "^1.1.1",
+    "eslint": "^8.48.0",
+    "@typescript-eslint/parser": "^6.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.5.0"
   },
   "license": "MIT",
   "repository": {

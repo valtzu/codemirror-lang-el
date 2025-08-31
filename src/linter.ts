@@ -10,14 +10,14 @@ import { Arguments, Method, Property, Variable, Function, BlockComment, BinaryEx
  */
 export const expressionLanguageLinterSource = (state: EditorState) => {
   const config = getExpressionLanguageConfig(state);
-  let diagnostics: Diagnostic[] = [];
+  const diagnostics: Diagnostic[] = [];
 
   syntaxTree(state).cursor().iterate(node => {
     const { from, to, type: { id } } = node;
 
     let identifier: string | undefined;
     switch (id) {
-      case 0:
+      case 0: {
         if (state.doc.length === 0 || from === 0) {
           // Don't show error on empty doc (even though it is an error)
           return;
@@ -32,7 +32,8 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         }
 
         return;
-      case Arguments:
+      }
+      case Arguments: {
         const fn = resolveFunctionDefinition(node.node.prevSibling, state, config);
         const args = fn?.args;
         if (!args) {
@@ -57,7 +58,12 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
           const typesExpected = args[i].type;
 
           if (typesExpected && !typesExpected.includes(ELScalar.Any) && !typesUsed.some(x => typesExpected.includes(x))) {
-            diagnostics.push({ from: n.from, to: n.to, severity: 'error', message: `<code>${typesExpected.join('|')}</code> expected, got <code>${typesUsed.join('|')}</code>` });
+            diagnostics.push({
+              from: n.from,
+              to: n.to,
+              severity: 'error',
+              message: `<code>${typesExpected.join('|')}</code> expected, got <code>${typesUsed.join('|')}</code>`
+            });
           }
           i++;
         }
@@ -67,8 +73,9 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         }
 
         break;
+      }
       case Property:
-      case Method:
+      case Method: {
         const leftArgument = node.node.parent?.firstChild?.node;
         const types = Array.from(resolveTypes(state, leftArgument, config));
         identifier = state.sliceDoc(from, to);
@@ -78,16 +85,16 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
         }
 
         break;
-
+      }
       case Variable:
-      case Function:
+      case Function: {
         identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
         if (!resolveIdentifier(id, identifier, config)) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} <code>${identifier}</code> not found` });
         }
 
         break;
-
+      }
       case BinaryExpression: {
         const operatorNode = node.node.getChild(OperatorKeyword);
         if (operatorNode) {

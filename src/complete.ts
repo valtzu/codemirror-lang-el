@@ -75,7 +75,7 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
   };
 }
 
-function completeMember(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number, explicit: boolean): CompletionResult | null {
+function completeMember(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): CompletionResult | null {
   if (!(tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) || !tree.parent?.firstChild) {
     return null;
   }
@@ -85,7 +85,7 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
     return null;
   }
 
-  let options = [];
+  const options = [];
   for (const type of types) {
     const typeDeclaration = config.types?.[type];
     options.push(
@@ -117,7 +117,7 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   }
 
   if ((prevNode.parent?.type.is(PropertyAccess) || prevNode.parent?.type.is(MethodAccess)) && [PropertyAccess, MethodAccess, ArrayAccess, Variable, Call, Application].includes(prevNode.parent.firstChild?.type.id)) {
-    return completeMember(state, config, prevNode, isIdentifier(prevNode) || isMember(prevNode) ? prevNode.from : pos, pos, explicit);
+    return completeMember(state, config, prevNode, isIdentifier(prevNode) || isMember(prevNode) ? prevNode.from : pos, pos);
   }
 
   if (

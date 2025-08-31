@@ -1,4 +1,4 @@
-// @ts-ignore
+// @ts-expect-error TS2307
 import { expressionlanguage } from "@valtzu/codemirror-lang-el";
 import { EditorState } from "@codemirror/state";
 import { Completion, CompletionContext, CompletionSource } from "@codemirror/autocomplete";
@@ -7,9 +7,9 @@ import ist from "ist";
 const operatorKeywords = ['starts with', 'ends with', 'contains', 'matches', 'in', 'not', 'or', 'xor', 'and'];
 
 async function get(doc: string, { explicit } = { explicit: false }) {
-  let cur = doc.indexOf("‸");
+  const cur = doc.indexOf("‸");
   doc = doc.slice(0, cur) + doc.slice(cur + "‸".length);
-  let state = EditorState.create({
+  const state = EditorState.create({
     doc,
     selection: { anchor: cur },
     extensions: [expressionlanguage({
@@ -41,31 +41,31 @@ async function get(doc: string, { explicit } = { explicit: false }) {
 
 describe("Expression language completion", () => {
   it("completes when explicitly requested", async () => {
-    let c = await get("‸", {explicit: true}) ?? [];
+    const c = await get("‸", {explicit: true}) ?? [];
     ist(c.length, 0, '>');
     ist(!c.some(o => operatorKeywords.includes(o.label)));
   });
 
   it("completes when explicitly requested, even when non-empty", async () => {
-    let c = await get("foo > 10 and ‸", {explicit: true}) ?? [];
+    const c = await get("foo > 10 and ‸", {explicit: true}) ?? [];
     ist(c.length, 0, '>');
     ist(!c.some(o => operatorKeywords.includes(o.label)));
   });
 
   it("completes operators when explicitly requested", async () => {
-    let c = await get("foo > 10 ‸", {explicit: true}) ?? [];
+    const c = await get("foo > 10 ‸", {explicit: true}) ?? [];
     ist(c.length, 0, '>');
     ist(c.some(o => operatorKeywords.includes(o.label)));
   });
 
   it("completes variables when explicitly requested, even mid-word", async () => {
-    let c = await get("foo > 10 and foo‸", {explicit: true}) ?? [];
+    const c = await get("foo > 10 and foo‸", {explicit: true}) ?? [];
     ist(c.length, 0, '>');
     ist(!c.some(o => operatorKeywords.includes(o.label)));
   });
 
   it("completes variables", async () => {
-    let c = await get("foo‸") ?? [];
+    const c = await get("foo‸") ?? [];
     ist(c.length, 0, '>');
     ist(c.map(x => x.label).includes('foobar'));
     ist(c.map(x => x.label).includes('foobaz'));
@@ -144,7 +144,7 @@ describe("Expression language completion", () => {
   });
 
   it("completes object members after complex expression", async () => {
-    let c = await get("smash_my_head(obj.firstMethod()) + obj.‸") ?? [];
+    const c = await get("smash_my_head(obj.firstMethod()) + obj.‸") ?? [];
     ist(c.length, 3);
     ist("property11", c[0].label);
     ist("property22", c[1].label);
@@ -164,7 +164,7 @@ describe("Expression language completion", () => {
   });
 
   it("does complete after ternary expression", async () => {
-    let c = await get("(foobar ? obj : false).‸") ?? [];
+    const c = await get("(foobar ? obj : false).‸") ?? [];
     ist(c.length, 3);
     ist("property11", c[0].label);
     ist("property22", c[1].label);
@@ -172,7 +172,7 @@ describe("Expression language completion", () => {
   });
 
   it("does complete after ternary expression shortcut", async () => {
-    let c = await get("(foobar ? obj).‸") ?? []
+    const c = await get("(foobar ? obj).‸") ?? []
     ist(c.length, 3);
     ist("property11", c[0].label);
     ist("property22", c[1].label);
@@ -180,7 +180,7 @@ describe("Expression language completion", () => {
   });
 
   it("does complete after ternary expression shortcut 2", async () => {
-    let c = await get("(foobar ?: obj).‸") ?? [];
+    const c = await get("(foobar ?: obj).‸") ?? [];
     ist(c.length, 3);
     ist("property11", c[0].label);
     ist("property22", c[1].label);
