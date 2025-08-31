@@ -8,3 +8,5 @@
 /.env
 /Dockerfile
 /compose.yaml
+/.eslintignore
+/.eslintrc.json

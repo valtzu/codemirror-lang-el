@@ -27,7 +27,6 @@ function resolveArguments(node: SyntaxNode) {
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   const config = getExpressionLanguageConfig(state);
 
-  // @ts-ignore
   return state.selection.ranges
     .filter(range => range.empty)
     .map(range => {
@@ -55,7 +54,7 @@ function getCursorTooltips(state: EditorState): readonly Tooltip[] {
         strictSide: false,
         arrow: true,
         create: () => {
-          let dom = document.createElement("div");
+          const dom = document.createElement("div");
           dom.className = "cm-tooltip-cursor";
           dom.textContent = `${argName}`;
           return { dom };

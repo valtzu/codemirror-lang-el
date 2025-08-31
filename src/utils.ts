@@ -73,7 +73,7 @@ export const resolveIdentifier = (nodeTypeId: typeof Method | typeof Property | 
 };
 
 export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | null, config: ExpressionLanguageConfig): Set<string> {
-  let types: Set<string> = new Set<string>();
+  const types: Set<string> = new Set<string>();
   if (!node) {
     return types;
   }
@@ -85,22 +85,22 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
     resolveTypes(state, node.firstChild, config).forEach(x => types.add(x));
   } else if (node.type.is(Variable)) {
     const varName = state.sliceDoc(node.from, node.to) || '';
-    // @ts-ignore
+    // @ts-expect-error TS2339
     resolveIdentifier(node.type.id, varName, config)?.type?.forEach((x: string) => types.add(x));
   } else if (node.type.is(Function)) {
     const varName = state.sliceDoc(node.from, node.to) || '';
-    // @ts-ignore
+    // @ts-expect-error TS2339
     resolveIdentifier(node.type.id, varName, config)?.returnType?.forEach((x: string) => types.add(x));
   } else if (node.type.is(PropertyAccess) && node.firstChild && node.lastChild?.type.is(Property)) {
     const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
     resolveTypes(state, node.firstChild, config)?.forEach(baseType => {
-      // @ts-ignore
+      // @ts-expect-error TS2339
       resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.type?.forEach((x: string) => types.add(x));
     });
   } else if (node.type.is(MethodAccess) && node.firstChild && node.lastChild?.type.is(Method)) {
     const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
     resolveTypes(state, node.firstChild, config)?.forEach(baseType => {
-      // @ts-ignore
+      // @ts-expect-error TS2339
       resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
     });
   }

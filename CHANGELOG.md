@@ -5,6 +5,7 @@ CHANGELOG
 ---
 
 * Lint left- and right-side arguments of `contains`, `starts with`, `ends with` and `matches` operators
+* Add eslint to make contributing/review easier
 
 1.2
 ---
