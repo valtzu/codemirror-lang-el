@@ -13,6 +13,7 @@
 | `Number` | `'number'` | Equivalent to PHP `int` or `float` |
 | `String` | `'string'` | Equivalent to PHP `string` |
 | `Null` | `'null'` | Equivalent to PHP `null` |
+| `Array` | `'array'` | Equivalent to PHP `array` |
 | `Any` | `'any'` | Equivalent to PHP `mixed` |
 
 
@@ -27,11 +28,12 @@
 
 ### ExpressionLanguageConfig
 
-The configuration object that is passed to `expressionlanguage` function
+
 
 | Property | Type | Description |
 | ---------- | ---------- | ---------- |
 | `types` | `{ [key: string]: ELType; } or undefined` | Type definitions used in `identifiers` and `functions` |
+| `typeResolver` | `TypeResolver or undefined` | Optional async type resolver for dynamic/lazy type loading |
 | `identifiers` | `ELIdentifier[] or undefined` | Top-level variables |
 | `functions` | `ELFunction[] or undefined` | Top-level functions |
 
@@ -96,7 +98,16 @@ Represents a function or a method of an object
 
 ## Types
 
+- [TypeResolver](#typeresolver)
 - [ELTypeName](#eltypename)
+
+### TypeResolver
+
+The configuration object that is passed to `expressionlanguage` function
+
+| Type | Type |
+| ---------- | ---------- |
+| `TypeResolver` | `(type: string) => Promise<ELType or undefined> or ELType or undefined` |
 
 ### ELTypeName
 

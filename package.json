@@ -2,6 +2,7 @@
   "name": "@valtzu/codemirror-lang-el",
   "description": "Symfony Expression Language language support for CodeMirror",
   "scripts": {
+    "generate-docs": "npx tsdoc --src=src/types.ts --dest=CONFIGURATION.md --noemoji --types",
     "pretest": "npm run-script prepare",
     "test": "cm-runtests",
     "prepare": "cm-buildhelper src/index.ts",

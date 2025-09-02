@@ -54,6 +54,7 @@ export const ELLanguage = LRLanguage.define({
 });
 
 export function expressionlanguage(config: ExpressionLanguageConfig = {}, extensions: Extension[] = []) {
+  config.typeResolver ??= (type) => config.types?.[type]
   return new LanguageSupport(ELLanguage, [
     ELLanguage.data.of({
       autocomplete: expressionLanguageCompletion,
