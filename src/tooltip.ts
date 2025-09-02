@@ -1,6 +1,6 @@
 import { SyntaxNode } from "@lezer/common";
-import { EditorState, StateField } from "@codemirror/state";
-import { hoverTooltip, showTooltip, Tooltip } from "@codemirror/view";
+import { EditorState, StateEffect, StateField } from "@codemirror/state";
+import { hoverTooltip, showTooltip, Tooltip, ViewPlugin, ViewUpdate } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 import { createInfoElement, getExpressionLanguageConfig, keywords, resolveFunctionDefinition, resolveTypes } from "./utils";
 import { Arguments, Function, Method, MethodAccess, OperatorKeyword, Property, PropertyAccess, Variable } from "./syntax.grammar.terms";
@@ -8,8 +8,8 @@ import { Arguments, Function, Method, MethodAccess, OperatorKeyword, Property, P
 function getNodeOrdinal(node: SyntaxNode) {
   let ordinal = -1;
 
-  // noinspection StatementWithEmptyBodyJS
-  for (let c: SyntaxNode | null = node; c; c = c.prevSibling, ordinal++) ;
+  // eslint-disable-next-line
+  for (let c: SyntaxNode | null = node; c; c = c.prevSibling, ordinal++) {}
 
   return ordinal;
 }
@@ -24,60 +24,68 @@ function resolveArguments(node: SyntaxNode) {
   return c;
 }
 
-function getCursorTooltips(state: EditorState): readonly Tooltip[] {
+async function getCursorTooltips(state: EditorState): Promise<readonly Tooltip[]> {
   const config = getExpressionLanguageConfig(state);
 
-  return state.selection.ranges
-    .filter(range => range.empty)
-    .map(range => {
-      const tree = syntaxTree(state);
-      const node = tree.resolveInner(range.from, 0);
-      const args = resolveArguments(node);
-      if (!args || !args.prevSibling) {
-        return null;
-      }
-
-      const fn = resolveFunctionDefinition(args.prevSibling, state, config);
-      if (!fn) {
-        return null;
-      }
-
-      const n = args.childAfter(range.from - 1);
-      const argName = fn.args?.[n ? getNodeOrdinal(n) : 0]?.name;
-      if (n && n.from !== range.from || !argName) {
-        return null;
-      }
-
-      return {
-        pos: range.head,
-        above: true,
-        strictSide: false,
-        arrow: true,
-        create: () => {
-          const dom = document.createElement("div");
-          dom.className = "cm-tooltip-cursor";
-          dom.textContent = `${argName}`;
-          return { dom };
-        },
-      };
-    }).filter(x => x);
-}
-
-export const cursorTooltipField = StateField.define<readonly Tooltip[]>({
-  create: (state) => getCursorTooltips(state),
-
-  update(tooltips, tr) {
-    if (!tr.docChanged && !tr.selection) {
-      return tooltips;
+  const results: Tooltip[] = [];
+  for (const range of state.selection.ranges.filter(range => range.empty)) {
+    const tree = syntaxTree(state);
+    const node = tree.resolveInner(range.from, 0);
+    const args = resolveArguments(node);
+    if (!args || !args.prevSibling) {
+      continue;
     }
 
-    return getCursorTooltips(tr.state);
+    const fn = await resolveFunctionDefinition(args.prevSibling, state, config);
+    if (!fn) {
+      continue;
+    }
+
+    const n = args.childAfter(range.from - 1);
+    const argName = fn.args?.[n ? getNodeOrdinal(n) : 0]?.name;
+    if ((n && n.from !== range.from) || !argName) {
+      continue;
+    }
+
+    results.push({
+      pos: range.head,
+      above: true,
+      strictSide: false,
+      arrow: true,
+      create: () => {
+        const dom = document.createElement("div");
+        dom.className = "cm-tooltip-cursor";
+        dom.textContent = `${argName}`;
+        return { dom };
+      },
+    });
+  }
+  return results;
+}
+
+export const setCursorTooltipsEffect = StateEffect.define<readonly Tooltip[]>();
+
+export const cursorTooltipField = [StateField.define<readonly Tooltip[]>({
+  create: () => [],
+  update(tooltips, tr) {
+    for (const e of tr.effects) {
+      if (e.is(setCursorTooltipsEffect)) return e.value;
+    }
+    return tooltips;
   },
-
   provide: f => showTooltip.computeN([f], state => state.field(f))
-});
+}), ViewPlugin.fromClass(
+  class {
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.selectionSet) {
+        getCursorTooltips(update.view.state)
+          .then(tooltips => update.view.dispatch({ effects: setCursorTooltipsEffect.of(tooltips) }));
+      }
+    }
+  }
+)];
 
-export const keywordTooltip = hoverTooltip((view, pos, side) => {
+export const keywordTooltip = hoverTooltip(async (view, pos, side) => {
   const config = getExpressionLanguageConfig(view.state);
   const tree: SyntaxNode = syntaxTree(view.state).resolveInner(pos, side);
 
@@ -102,11 +110,13 @@ export const keywordTooltip = hoverTooltip((view, pos, side) => {
   let info: string;
   if (tree.parent?.firstChild && (tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) && tree.prevSibling) {
     const node = tree.parent.firstChild;
-    const types = Array.from(resolveTypes(view.state, node, config));
+    const types = Array.from(await resolveTypes(view.state, node, config));
     const name = view.state.sliceDoc(tree.from, tree.to);
+    const identifierInfos = await Promise.all(types.map(async type => (await config.typeResolver(type))?.identifiers?.find(x => x.name === name)?.info));
+    const functionInfos = await Promise.all(types.map(async type => (await config.typeResolver(type))?.functions?.find(x => x.name === name)?.info));
     info = [
-      ...types.map(type => config.types?.[type]?.identifiers?.find(x => x.name === name)?.info).filter(skipEmpty),
-      ...types.map(type => config.types?.[type]?.functions?.find(x => x.name === name)?.info).filter(skipEmpty),
+      ...identifierInfos.filter(skipEmpty),
+      ...functionInfos.filter(skipEmpty),
     ].join('\n');
   } else {
     const name = view.state.sliceDoc(tree.from, tree.to);

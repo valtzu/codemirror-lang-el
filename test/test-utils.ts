@@ -63,9 +63,9 @@ describe("Type resolving", () => {
     ['arr2[0]', 'string[]'],
     ['arr2[0][0]', 'string'],
   ].forEach(([doc, type]) =>
-    it(`${doc} -> ${type}`, () => {
+    it(`${doc} -> ${type}`, async () => {
       const state = get(doc);
-      const types = _utils.resolveTypes(state, syntaxTree(state).topNode.firstChild, config, true);
+      const types = await _utils.resolveTypes(state, syntaxTree(state).topNode.firstChild, config, true);
       assert.equal(type, [...types].join('|'));
     }),
   );

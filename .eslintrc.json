@@ -18,6 +18,8 @@
   },
   "ignorePatterns": ["dist/*", "node_modules/*"],
   "rules": {
+    "indent": ["error", 2, { "SwitchCase": 1 }],
+    "brace-style": ["error", "1tbs", { "allowSingleLine": false }],
     "@typescript-eslint/no-explicit-any": "off"
   }
 }

@@ -8,7 +8,9 @@ import { fileURLToPath } from 'url';
 const caseDir = path.dirname(fileURLToPath(import.meta.url));
 
 for (const file of fs.readdirSync(caseDir)) {
-  if (!/\.txt$/.test(file)) continue;
+  if (!/\.txt$/.test(file)) {
+    continue;
+  }
 
   const name = /^[^.]*/.exec(file)[0];
   describe(name, () => {

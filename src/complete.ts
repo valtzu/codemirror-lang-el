@@ -75,23 +75,26 @@ function completeIdentifier(state: EditorState, config: ExpressionLanguageConfig
   };
 }
 
-function completeMember(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): CompletionResult | null {
+
+async function completeMember(state: EditorState, config: ExpressionLanguageConfig, tree: SyntaxNode, from: number, to: number): Promise<CompletionResult | null> {
   if (!(tree.parent?.type.is(PropertyAccess) || tree.parent?.type.is(MethodAccess)) || !tree.parent?.firstChild) {
     return null;
   }
 
-  const types = resolveTypes(state, tree.parent.firstChild.node, config);
+  const types = await resolveTypes(state, tree.parent.firstChild.node, config);
   if (!types?.size) {
     return null;
   }
 
-  const options = [];
+  const options: Completion[] = [];
   for (const type of types) {
-    const typeDeclaration = config.types?.[type];
-    options.push(
-      ...(typeDeclaration?.identifiers?.map(autocompleteIdentifier) || []),
-      ...(typeDeclaration?.functions?.map(autocompleteFunction) || []),
-    );
+    const typeDeclaration = await config.typeResolver(type);
+    if (typeDeclaration?.identifiers) {
+      options.push(...typeDeclaration.identifiers.map(autocompleteIdentifier));
+    }
+    if (typeDeclaration?.functions) {
+      options.push(...typeDeclaration.functions.map(autocompleteFunction));
+    }
   }
 
   return {
@@ -102,7 +105,8 @@ function completeMember(state: EditorState, config: ExpressionLanguageConfig, tr
   };
 }
 
-export function expressionLanguageCompletion(context: CompletionContext): CompletionResult | null {
+
+export async function expressionLanguageCompletion(context: CompletionContext): Promise<CompletionResult | null> {
   const { state, pos, explicit } = context;
   const tree = syntaxTree(state);
   const lastChar = state.sliceDoc(pos - 1, pos);
@@ -117,7 +121,7 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   }
 
   if ((prevNode.parent?.type.is(PropertyAccess) || prevNode.parent?.type.is(MethodAccess)) && [PropertyAccess, MethodAccess, ArrayAccess, Variable, Call, Application].includes(prevNode.parent.firstChild?.type.id)) {
-    return completeMember(state, config, prevNode, isIdentifier(prevNode) || isMember(prevNode) ? prevNode.from : pos, pos);
+    return await completeMember(state, config, prevNode, isIdentifier(prevNode) || isMember(prevNode) ? prevNode.from : pos, pos);
   }
 
   if (

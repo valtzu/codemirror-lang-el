@@ -50,137 +50,125 @@ function get(doc: string) {
 }
 
 describe("Expression language linting", () => {
-  it("detects missing variables", () => {
-    const diagnostics = get("notfound / 5");
-
+  it("detects missing variables", async () => {
+    const diagnostics = await get("notfound / 5");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].message, 'Variable <code>notfound</code> not found');
     ist(diagnostics[0].from, 0);
     ist(diagnostics[0].to, 8);
   });
 
-  it("detects missing functions", () => {
-    const diagnostics = get("obj + notfound()");
-
+  it("detects missing functions", async () => {
+    const diagnostics = await get("obj + notfound()");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].message, 'Function <code>notfound</code> not found');
     ist(diagnostics[0].from, 6);
     ist(diagnostics[0].to, 14);
   });
 
-  it("complains about variables after variables", () => {
-    const diagnostics = get("obj obj");
-
+  it("complains about variables after variables", async () => {
+    const diagnostics = await get("obj obj");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].message, "Unexpected identifier <code>obj</code>");
     ist(diagnostics[0].from, 4);
     ist(diagnostics[0].to, 7);
   });
 
-  it("complains about multiple binary operators in row", () => {
-    const diagnostics = get("obj +* obj");
-
+  it("complains about multiple binary operators in row", async () => {
+    const diagnostics = await get("obj +* obj");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 5);
     ist(diagnostics[0].to, 10);
     ist(diagnostics[0].message, "Expression expected");
   });
 
-  it("complains about too many arguments", () => {
-    const diagnostics = get("smash_my_head({}, 2)");
-
+  it("complains about too many arguments", async () => {
+    const diagnostics = await get("smash_my_head({}, 2)");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 18);
     ist(diagnostics[0].to, 19);
     ist(diagnostics[0].message, "Unexpected argument – <code>smash_my_head</code> takes exactly 1 argument");
   });
 
-  it("complains about too many arguments when there are optional arguments", () => {
-    const diagnostics = get("any_fn(1, 2, 3)");
-
+  it("complains about too many arguments when there are optional arguments", async () => {
+    const diagnostics = await get("any_fn(1, 2, 3)");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 13);
     ist(diagnostics[0].to, 14);
     ist(diagnostics[0].message, "Unexpected argument – <code>any_fn</code> takes 1–2 arguments");
   });
 
-  it("complains about too few arguments", () => {
-    const diagnostics = get("smash_my_head()");
+  it("complains about too few arguments", async () => {
+    const diagnostics = await get("smash_my_head()");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 13);
     ist(diagnostics[0].to, 15);
     ist(diagnostics[0].message, "Too few arguments – <code>smash_my_head</code> takes exactly 1 argument");
   });
 
-  it("complains about too few arguments when there are optional arguments", () => {
-    const diagnostics = get("any_fn()");
+  it("complains about too few arguments when there are optional arguments", async () => {
+    const diagnostics = await get("any_fn()");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 6);
     ist(diagnostics[0].to, 8);
     ist(diagnostics[0].message, "Too few arguments – <code>any_fn</code> takes 1–2 arguments");
   });
 
-  it("complains about wrong argument type using constant", () => {
-    const diagnostics = get("smash_my_head(5)");
-
+  it("complains about wrong argument type using constant", async () => {
+    const diagnostics = await get("smash_my_head(5)");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 14);
     ist(diagnostics[0].to, 15);
     ist(diagnostics[0].message, "<code>object</code> expected, got <code>number</code>");
   });
 
-  it("complains about wrong argument type using resolved type", () => {
-    const diagnostics = get("smash_my_head(smh())");
-
+  it("complains about wrong argument type using resolved type", async () => {
+    const diagnostics = await get("smash_my_head(smh())");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 14);
     ist(diagnostics[0].to, 19);
     ist(diagnostics[0].message, "<code>object</code> expected, got <code>string</code>");
   });
 
-  it('does not complain about putting "wrong" argument type to any', () => {
-    const diagnostics = get("any_fn(smh())");
-
+  it('does not complain about putting "wrong" argument type to any', async () => {
+    const diagnostics = await get("any_fn(smh())");
     ist(diagnostics.length, 0);
   });
 
-  it("comments ignored in arguments", () => {
-    const diagnostics = get("smh(/* comment */)");
-
+  it("comments ignored in arguments", async () => {
+    const diagnostics = await get("smh(/* comment */)");
     ist(diagnostics.length, 0);
   });
 
-  it("accepts comments", () => {
-    const diagnostics = get("1 /* comment */ + 2");
-
+  it("accepts comments", async () => {
+    const diagnostics = await get("1 /* comment */ + 2");
     ist(diagnostics.length, 0);
   });
 
-  it("complains about non-array after 'in' operator", () => {
-    const diagnostics = get("'foo' in 'foobar'");
-
+  it("complains about non-array after 'in' operator", async () => {
+    const diagnostics = await get("'foo' in 'foobar'");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].from, 9);
     ist(diagnostics[0].to, 17);
     ist(diagnostics[0].message, "<code>array</code> expected, got <code>string</code>");
   });
 
-  it("complains about non-string arguments for 'contains' operator", () => {
+  it("complains about non-string arguments for 'contains' operator", async () => {
     // Left side not string
-    let diagnostics = get("1 contains 'foo'");
+    let diagnostics = await get("1 contains 'foo'");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].message, "<code>string</code> expected, got <code>number</code>");
     // Right side not string
-    diagnostics = get("'foo' contains 1");
+    diagnostics = await get("'foo' contains 1");
     ist(diagnostics.length, 1);
     ist(diagnostics[0].message, "<code>string</code> expected, got <code>number</code>");
     // Both sides not string
-    diagnostics = get("1 contains 2");
+    diagnostics = await get("1 contains 2");
     ist(diagnostics.length, 2);
     ist(diagnostics[0].message, "<code>string</code> expected, got <code>number</code>");
     ist(diagnostics[1].message, "<code>string</code> expected, got <code>number</code>");
     // Both sides string: no error
-    diagnostics = get("'foo' contains 'bar'");
+    diagnostics = await get("'foo' contains 'bar'");
     ist(diagnostics.length, 0);
   });
 });

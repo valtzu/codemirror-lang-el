@@ -3,9 +3,14 @@
 /**
  * The configuration object that is passed to `expressionlanguage` function
  */
+
+export type TypeResolver = (type: string) => Promise<ELType | undefined> | ELType | undefined;
+
 export interface ExpressionLanguageConfig {
   /** Type definitions used in `identifiers` & `functions` */
   types?: { [key: string]: ELType };
+  /** Optional async type resolver for dynamic/lazy type loading */
+  typeResolver?: TypeResolver;
   /** Top-level variables */
   identifiers?: ELIdentifier[];
   /** Top-level functions */
