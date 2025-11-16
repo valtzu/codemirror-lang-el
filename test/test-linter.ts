@@ -19,7 +19,11 @@ const config = {
   identifiers: [
     {name: "foobar"},
     {name: "foobaz"},
-    {name: "obj", type: ["custom44"]}
+    {name: "obj", type: ["custom44"]},
+    {name: "arr", type: ["array"]},
+    {name: "any_arr", type: ["any[]"]},
+    {name: "int_arr", type: ["int[]"]},
+    {name: "any_var", type: ["any"]},
   ],
   functions: [
     {name: "smh", args: [], returnType: ["string"]},
@@ -163,6 +167,27 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].from, 9);
     ist(diagnostics[0].to, 17);
     ist(diagnostics[0].message, "<code>array</code> expected, got <code>string</code>");
+  });
+
+  it("warns about type mismatch with 'in'", () => {
+    const diagnostics = get("'foo' in int_arr");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 0);
+    ist(diagnostics[0].to, 16);
+    ist(diagnostics[0].message, "Expression is always <code>false</code> because <code>string</code> not found in <code>int[]</code>");
+  });
+
+  it("does not complain about type mismatch with 'in any'", () => {
+    ist(get("'foo' in any_var").length, 0);
+  });
+
+  it("does not complain about type mismatch with 'in any[]'", () => {
+    ist(get("'foo' in any_arr").length, 0);
+  });
+
+  it("does not complain about type mismatch with 'in array'", () => {
+    ist(get("'foo' in arr").length, 0);
   });
 
   it("complains about non-string arguments for 'contains' operator", () => {

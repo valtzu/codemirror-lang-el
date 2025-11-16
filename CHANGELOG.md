@@ -6,6 +6,7 @@ CHANGELOG
 
 * Lint left- and right-side arguments of `contains`, `starts with`, `ends with` and `matches` operators
 * Add eslint to make contributing/review easier
+* Add type checking for left-side argument in `in` expression
 
 1.2
 ---

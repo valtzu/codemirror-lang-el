@@ -102,9 +102,13 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
           const leftArgument = node.node.firstChild;
           const rightArgument = node.node.lastChild;
           if (operator === 'in') {
-            const types = resolveTypes(state, rightArgument, config);
-            if (!types.has(ELScalar.Array)) {
-              diagnostics.push({ from: rightArgument.from, to: rightArgument.to, severity: 'error', message: `<code>${ELScalar.Array}</code> expected, got <code>${[...types].join('|')}</code>` });
+            const leftTypes = resolveTypes(state, leftArgument, config);
+            const rightTypes = resolveTypes(state, rightArgument, config);
+            const allowsAny = rightTypes.has(ELScalar.Array) || rightTypes.has(ELScalar.Any);
+            if (!allowsAny && ![...rightTypes].some(x => x.endsWith('[]'))) {
+              diagnostics.push({ from: rightArgument.from, to: rightArgument.to, severity: 'error', message: `<code>${ELScalar.Array}</code> expected, got <code>${[...rightTypes].join('|')}</code>` });
+            } else if (!allowsAny && !rightTypes.has(`${ELScalar.Any}[]`) && ![...leftTypes].some(type => rightTypes.has(`${type}[]`))) {
+              diagnostics.push({ from: leftArgument.from, to: rightArgument.to, severity: 'warning', message: `Expression is always <code>false</code> because <code>${[...leftTypes].join('|')}</code> not found in <code>${[...rightTypes].join('|')}</code>` });
             }
           } else if (["contains", "starts with", "ends with", "matches"].includes(operator)) {
             // Both sides must be string
