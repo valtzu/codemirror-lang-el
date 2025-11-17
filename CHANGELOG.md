@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.4
+---
+
+* Improve support for typed arrays
+
 1.3
 ---
 

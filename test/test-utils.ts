@@ -62,6 +62,15 @@ describe("Type resolving", () => {
     // Nested array indexing: string[][] -> string[] then string
     ['arr2[0]', 'string[]'],
     ['arr2[0][0]', 'string'],
+    // Array literals should infer element type
+    ['[true, false]', 'bool[]'],
+    ['["hello"]', 'string[]'],
+    ['[1, 2, 3]', 'number[]'],
+    ['["foo"]', 'string[]'],
+    // Mixed element types in array
+    ['[1, "string"]', 'number[]|string[]'],
+    // Nested array literals
+    [('[["a", "b"]]'), 'string[][]']
   ].forEach(([doc, type]) =>
     it(`${doc} -> ${type}`, () => {
       const state = get(doc);

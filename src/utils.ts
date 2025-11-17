@@ -15,6 +15,7 @@ import {
   BinaryExpression,
   UnaryExpression,
   ArrayAccess,
+  Array,
 } from "./syntax.grammar.terms";
 
 export const createInfoElement = (html: string) => {
@@ -80,7 +81,27 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
 
   let type;
   if (typeof (type = node.type.prop(t)) !== "undefined") {
-    types.add(type);
+    if (type === ELScalar.Array) {
+      // For array literals, infer element types from array contents
+      const elementTypes = new Set<string>();
+      for (let child = node.firstChild; child; child = child.nextSibling) {
+        if (!child.type.isError) {
+          resolveTypes(state, child, config).forEach(elementType => {
+            elementTypes.add(elementType);
+          });
+        }
+      }
+      if (elementTypes.size > 0) {
+        // Build typed array notation (e.g., "string[]")
+        elementTypes.forEach(elementType => {
+          types.add(`${elementType}[]`);
+        });
+      } else {
+        types.add(type);
+      }
+    } else {
+      types.add(type);
+    }
   } else if (node.type.is(Call) && node.firstChild && node.lastChild) {
     resolveTypes(state, node.firstChild, config).forEach(x => types.add(x));
   } else if (node.type.is(Variable)) {
