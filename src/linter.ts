@@ -3,7 +3,7 @@ import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
 import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
 import { ELScalar } from "./types";
-import { Arguments, Method, Property, Variable, Function, BlockComment, BinaryExpression, OperatorKeyword } from "./syntax.grammar.terms";
+import { Arguments, Method, Property, Variable, Function, BlockComment, BinaryExpression, OperatorKeyword, ArrayAccess, PropertyAccess, MethodAccess } from "./syntax.grammar.terms";
 
 /**
  * @internal
@@ -76,12 +76,53 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
       }
       case Property:
       case Method: {
-        const leftArgument = node.node.parent?.firstChild?.node;
+        const parent = node.node.parent;
+        const isPropertyAccess = parent?.type.is(PropertyAccess);
+        const isMethodAccess = parent?.type.is(MethodAccess);
+
+        // Skip validation if this is part of a PropertyAccess/MethodAccess on array type
+        // (the PropertyAccess/MethodAccess case will handle the error)
+        if ((isPropertyAccess || isMethodAccess) && parent?.firstChild) {
+          const types = Array.from(resolveTypes(state, parent.firstChild.node, config));
+          const hasArrayType = types.includes(ELScalar.Array) || types.some(x => x.endsWith('[]'));
+          if (hasArrayType && !types.includes(ELScalar.Any)) {
+            break; // Skip property validation, error will be reported by PropertyAccess/MethodAccess case
+          }
+        }
+
+        const leftArgument = parent?.firstChild?.node;
         const types = Array.from(resolveTypes(state, leftArgument, config));
         identifier = state.sliceDoc(from, to);
 
         if (!types.find(type => resolveIdentifier(id, identifier, config.types?.[type]))) {
           diagnostics.push({ from, to, severity: 'error', message: `${node.name} <code>${identifier}</code> not found in <code>${types.join('|')}</code>` });
+        }
+
+        break;
+      }
+      case PropertyAccess:
+      case MethodAccess: {
+        const leftArgument = node.node.firstChild?.node;
+        const types = Array.from(resolveTypes(state, leftArgument, config));
+        const hasArrayType = types.includes(ELScalar.Array) || types.some(x => x.endsWith('[]'));
+
+        if (hasArrayType && !types.includes(ELScalar.Any)) {
+          const propertyOrMethod = node.node.lastChild;
+          const errorFrom = propertyOrMethod?.from ?? from;
+          const errorTo = propertyOrMethod?.to ?? to;
+          diagnostics.push({ from: errorFrom, to: errorTo, severity: 'error', message: `Unexpected object access on <code>${types.join('|')}</code>` });
+        }
+
+        break;
+      }
+      case ArrayAccess: {
+        const leftArgument = node.node.firstChild?.node;
+        const arrayAccessor = leftArgument.nextSibling;
+        const types = Array.from(resolveTypes(state, leftArgument, config));
+        const allowsAny = types.includes(ELScalar.Array) || types.includes(ELScalar.Any);
+
+        if (!allowsAny && ![...types].some(x => x.endsWith('[]'))) {
+          diagnostics.push({ from: arrayAccessor.from, to, severity: 'error', message: `Unexpected array access on <code>${types.join('|')}</code>` });
         }
 
         break;

@@ -106,7 +106,7 @@ export function expressionLanguageCompletion(context: CompletionContext): Comple
   const { state, pos, explicit } = context;
   const tree = syntaxTree(state);
   const lastChar = state.sliceDoc(pos - 1, pos);
-  const prevNode = tree.resolveInner(pos, lastChar === ')' ? 0 : -1);
+  const prevNode = tree.resolveInner(pos, (lastChar === ')' || lastChar === ']') ? 0 : -1);
   const config = getExpressionLanguageConfig(state);
 
   const isIdentifier = (node: SyntaxNode | undefined) => node?.type.is(Variable) || node?.type.is(Function);

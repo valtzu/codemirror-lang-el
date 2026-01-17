@@ -70,7 +70,13 @@ describe("Type resolving", () => {
     // Mixed element types in array
     ['[1, "string"]', 'number[]|string[]'],
     // Nested array literals
-    [('[["a", "b"]]'), 'string[][]']
+    [('[["a", "b"]]'), 'string[][]'],
+    // Null-safe property access should include null
+    ['obj?.property11', 'any|null'],
+    // Null-safe method access should include null
+    ['obj?.firstMethod()', 'custom44|null'],
+    // Null-safe array access should include null
+    ['arr?.[0]', 'string|null']
   ].forEach(([doc, type]) =>
     it(`${doc} -> ${type}`, () => {
       const state = get(doc);

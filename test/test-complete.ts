@@ -163,6 +163,10 @@ describe("Expression language completion", () => {
     ist(null, await get("(1)‸"));
   });
 
+  it("does not complete right after closing square bracket", async () => {
+    ist(null, await get("arr[0]‸"));
+  });
+
   it("does complete after ternary expression", async () => {
     const c = await get("(foobar ? obj : false).‸") ?? [];
     ist(c.length, 3);

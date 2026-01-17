@@ -15,7 +15,8 @@ import {
   BinaryExpression,
   UnaryExpression,
   ArrayAccess,
-  Array,
+  NullSafeMemberOf,
+  NullSafeArrayAccessor,
 } from "./syntax.grammar.terms";
 
 export const createInfoElement = (html: string) => {
@@ -43,7 +44,7 @@ export function resolveFunctionDefinition(node: SyntaxNode | null, state: Editor
   let identifier: string | undefined;
   if ((node.type.is(PropertyAccess) || node.type.is(MethodAccess)) && node.lastChild) {
     const leftArgument = node.firstChild?.node;
-    const types = Array.from(resolveTypes(state, leftArgument, config));
+    const types = window.Array.from(resolveTypes(state, leftArgument, config));
     identifier = state.sliceDoc(node.lastChild.from, node.lastChild.to);
 
     return types.map(type => resolveCallable(identifier, config.types?.[type])).find(x => x);
@@ -118,12 +119,18 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
       // @ts-expect-error TS2339
       resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.type?.forEach((x: string) => types.add(x));
     });
+    if (node.getChild(NullSafeMemberOf)) {
+      types.add(ELScalar.Null);
+    }
   } else if (node.type.is(MethodAccess) && node.firstChild && node.lastChild?.type.is(Method)) {
     const varName = state.sliceDoc(node.lastChild.from, node.lastChild.to) || '';
     resolveTypes(state, node.firstChild, config)?.forEach(baseType => {
       // @ts-expect-error TS2339
       resolveIdentifier(node.lastChild?.type.id, varName, config.types?.[baseType])?.returnType?.forEach((x: string) => types.add(x));
     });
+    if (node.getChild(NullSafeMemberOf)) {
+      types.add(ELScalar.Null);
+    }
   }
   // Array indexing: for typed arrays (e.g. Foo[]) return element type, for generic arrays return any
   else if (node.type.is(ArrayAccess) && node.firstChild) {
@@ -135,6 +142,9 @@ export function resolveTypes(state: EditorState, node: SyntaxNode | undefined | 
         types.add(ELScalar.Any);
       }
     });
+    if (node.getChild(NullSafeArrayAccessor)) {
+      types.add(ELScalar.Null);
+    }
   } else if (node.type.is(Application) && node.firstChild) {
     resolveTypes(state, node.firstChild, config).forEach(x => types.add(x));
   } else if (node.type.is(TernaryExpression) && node.firstChild && node.firstChild.nextSibling && node.firstChild.nextSibling.nextSibling) {
