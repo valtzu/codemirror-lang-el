@@ -5,6 +5,8 @@ CHANGELOG
 ---
 
 * Improve support for typed arrays
+* Add support for null-safe array access
+* Minor bugfixes & adjustments to autocomplete & linting
 
 1.3
 ---

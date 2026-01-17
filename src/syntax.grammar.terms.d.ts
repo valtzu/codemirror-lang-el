@@ -12,6 +12,7 @@ export declare const MemberOf: number;
 export declare const Method: number;
 export declare const MethodAccess: number;
 export declare const Null: number;
+export declare const NullSafeArrayAccessor: number;
 export declare const NullSafeMemberOf: number;
 export declare const Number: number;
 export declare const Object: number;

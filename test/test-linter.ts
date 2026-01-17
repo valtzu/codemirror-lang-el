@@ -160,6 +160,42 @@ describe("Expression language linting", () => {
     ist(diagnostics.length, 0);
   });
 
+  it("accepts null-safe array access", () => {
+    const diagnostics = get("arr?.[0]");
+
+    ist(diagnostics.length, 0);
+  });
+
+  it("complains about non-array after null-safe array access", () => {
+    const diagnostics = get("smh()?.[0]");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].from, 5);
+    ist(diagnostics[0].to, 10);
+    ist(diagnostics[0].message, "Unexpected array access on <code>string</code>");
+  });
+
+  it("complains about non-array after null-safe array access on variable", () => {
+    const diagnostics = get("any_var?.[0]");
+
+    ist(diagnostics.length, 0);
+  });
+
+  it("complains about property access on array literal", () => {
+    const diagnostics = get("['foo']?.bar");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].message, "Unexpected object access on <code>string[]</code>");
+    ist(diagnostics[0].from, 9);
+    ist(diagnostics[0].to, 12);
+  });
+
+  it("allows array access on array literal", () => {
+    const diagnostics = get("['foo']?.['bar']");
+
+    ist(diagnostics.length, 0);
+  });
+
   it("complains about non-array after 'in' operator", () => {
     const diagnostics = get("'foo' in 'foobar'");
 

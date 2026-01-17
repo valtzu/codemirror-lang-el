@@ -38,6 +38,38 @@ one?.two
 
 Expression(PropertyAccess(Variable, NullSafeMemberOf, Property))
 
+# Null-safe array access
+
+one?.[key]
+
+==>
+
+Expression(ArrayAccess(Variable, NullSafeArrayAccessor, Variable))
+
+# Regular array access after function call
+
+foo()[0]
+
+==>
+
+Expression(ArrayAccess(Call(Function, Arguments), ArrayAccessor, Number))
+
+# Null-safe property access on array literal
+
+['foo']?.bar
+
+==>
+
+Expression(PropertyAccess(Array(String), NullSafeMemberOf, Property))
+
+# Null-safe array access on array literal
+
+['foo']?.['bar']
+
+==>
+
+Expression(ArrayAccess(Array(String), NullSafeArrayAccessor, String))
+
 # Null-coalescing operator
 
 one ?? "two"
