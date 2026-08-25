@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+1.5
+---
+
+* Only warn (instead of erroring) about unknown variables directly followed by the null-coalescing operator (#27)
+
 1.4
 ---
 

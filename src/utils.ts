@@ -17,6 +17,8 @@ import {
   ArrayAccess,
   NullSafeMemberOf,
   NullSafeArrayAccessor,
+  Operator,
+  BlockComment,
 } from "./syntax.grammar.terms";
 
 export const createInfoElement = (html: string) => {
@@ -35,6 +37,21 @@ export const createCompletionInfoElement = (html: string) => {
   dom.innerHTML = html;
   return { dom };
 };
+
+/**
+ * Symfony allows unknown names when they are directly followed by the null-coalescing operator –
+ * `notfound ?? 42` evaluates to `42` instead of throwing.
+ *
+ * @see https://github.com/symfony/symfony/pull/54757
+ */
+export function isNullCoalesced(state: EditorState, node: SyntaxNode): boolean {
+  let sibling = node.nextSibling;
+  while (sibling?.type.is(BlockComment)) {
+    sibling = sibling.nextSibling;
+  }
+
+  return !!sibling?.type.is(Operator) && state.sliceDoc(sibling.from, sibling.to) === '??';
+}
 
 export function resolveFunctionDefinition(node: SyntaxNode | null, state: EditorState, config: ExpressionLanguageConfig) {
   if (!node) {

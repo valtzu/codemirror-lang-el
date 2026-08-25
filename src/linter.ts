@@ -1,7 +1,7 @@
 import { EditorState } from "@codemirror/state";
 import { Diagnostic, linter } from "@codemirror/lint";
 import { syntaxTree } from "@codemirror/language";
-import { getExpressionLanguageConfig, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
+import { getExpressionLanguageConfig, isNullCoalesced, resolveFunctionDefinition, resolveIdentifier, resolveTypes } from "./utils";
 import { ELScalar } from "./types";
 import { Arguments, Method, Property, Variable, Function, BlockComment, BinaryExpression, OperatorKeyword, ArrayAccess, PropertyAccess, MethodAccess } from "./syntax.grammar.terms";
 
@@ -131,7 +131,11 @@ export const expressionLanguageLinterSource = (state: EditorState) => {
       case Function: {
         identifier = state.sliceDoc(from, node.node.firstChild ? node.node.firstChild.from - 1 : to);
         if (!resolveIdentifier(id, identifier, config)) {
-          diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} <code>${identifier}</code> not found` });
+          if (id === Variable && isNullCoalesced(state, node.node)) {
+            diagnostics.push({ from, to, severity: 'warning', message: `${node.node.name} <code>${identifier}</code> not found – evaluates to <code>null</code>` });
+          } else {
+            diagnostics.push({ from, to, severity: 'error', message: `${node.node.name} <code>${identifier}</code> not found` });
+          }
         }
 
         break;
