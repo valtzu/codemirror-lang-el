@@ -118,15 +118,6 @@ See [CONFIGURATION.md](CONFIGURATION.md)
 </script>
 ```
 
-### Using OpenAI codex
-
-Create `.env` file with
-```
-OPENAI_API_KEY="..."
-```
-
-Then use `docker compose run --rm codex` to develop with AI.
-
 ### Contributing
 
 Contributions are welcome.

@@ -5,8 +5,7 @@
 /rollup.config.js
 /tsconfig.json
 /.editorconfig
-/.env
-/Dockerfile
-/compose.yaml
 /.eslintignore
 /.eslintrc.json
+/AGENTS.md
+/CLAUDE.md
