@@ -63,6 +63,49 @@ describe("Expression language linting", () => {
     ist(diagnostics[0].to, 8);
   });
 
+  it("only warns about missing variables followed by the null-coalescing operator", () => {
+    const diagnostics = get("notfound ?? 42");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].severity, 'warning');
+    ist(diagnostics[0].message, 'Variable <code>notfound</code> not found – evaluates to <code>null</code>');
+    ist(diagnostics[0].from, 0);
+    ist(diagnostics[0].to, 8);
+  });
+
+  it("only warns about missing variables in a chain of null-coalescing operators", () => {
+    const diagnostics = get("notfound ?? alsonotfound ?? 42");
+
+    ist(diagnostics.length, 2);
+    ist(diagnostics[0].severity, 'warning');
+    ist(diagnostics[1].severity, 'warning');
+  });
+
+  it("ignores block comments between the variable and the null-coalescing operator", () => {
+    const diagnostics = get("notfound /* comment */ ?? 42");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].severity, 'warning');
+  });
+
+  it("still errors on missing variables not directly followed by the null-coalescing operator", () => {
+    for (const expression of ["notfound ?: 42", "(notfound) ?? 42", "notfound.property ?? 42", "notfound[0] ?? 42"]) {
+      const diagnostics = get(expression).filter(x => x.message.includes('notfound'));
+
+      ist(diagnostics.length, 1);
+      ist(diagnostics[0].severity, 'error');
+      ist(diagnostics[0].message, 'Variable <code>notfound</code> not found');
+    }
+  });
+
+  it("still errors on missing functions followed by the null-coalescing operator", () => {
+    const diagnostics = get("notfound() ?? 42");
+
+    ist(diagnostics.length, 1);
+    ist(diagnostics[0].severity, 'error');
+    ist(diagnostics[0].message, 'Function <code>notfound</code> not found');
+  });
+
   it("detects missing functions", () => {
     const diagnostics = get("obj + notfound()");
 
